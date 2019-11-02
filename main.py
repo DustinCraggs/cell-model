@@ -1,13 +1,15 @@
 import argparse
 import numpy as np
 import numba
+import time
 from numba import cuda
 from numba.cuda import random
 
 from util.save_video import video_stream
 
 # Simulation parameters:
-x_dim, y_dim = 250, 250
+n_iterations = 100
+x_dim, y_dim = 100, 100
 init_prob = 0.1
 energy_survival_threshold = 10
 
@@ -30,17 +32,19 @@ n_threads = (tpb, tpb)
 n_blocks = ((x_dim + tpb - 1) // tpb, (y_dim + tpb - 1) // tpb)
 
 def main(args):
+	t0 = time.time()
 	cells = allocate_cell_memory()
 	rng_states = allocate_rng_states()
 	initialise_cells[n_blocks, n_threads](cells, rng_states, init_prob)
 	with video_stream((x_dim, y_dim), 'occu.mp4', scale=3) as occu_out, \
 		 video_stream((x_dim, y_dim), 'enrg.mp4', scale=3) as enrg_out:
-		for i in range(100):
+		for i in range(n_iterations):
 			print(i, end=', ', flush=True)
 			simulate_cells[n_blocks, n_threads](cells, rng_states, 1)
 			occu_out.write(occupied(np.array(cells)) * 255)
 			enrg_out.write(energy(np.array(cells)) * 4)
 		print()
+	print('Total time taken: {}'.format(time.time() - t0))
 
 def print_state(cells):
 	print("Occupation:")
