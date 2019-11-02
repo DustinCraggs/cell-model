@@ -13,11 +13,16 @@ x_dim, y_dim = 100, 100
 init_prob = 0.1
 energy_survival_threshold = 10
 
-light_function = lambda _pos: 3
+@cuda.jit(device=True, inline=True)
+def light_function(_pos):
+	return 3
+
+@cuda.jit(device=True, inline=True)
+def co2_function(_pos):
+	return 1
+
 gather_light_energy_cost = 1
 gather_light_energy_prob = 0.3
-
-co2_function = lambda _pos: 1
 
 # Data packing: (TODO: calc offset)
 energy_offset = 1
