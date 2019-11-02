@@ -46,8 +46,9 @@ def main(args):
 		for i in range(n_iterations):
 			print(i, end=', ', flush=True)
 			simulate_cells[n_blocks, n_threads](cells, rng_states, 1)
-			occu_out.write(occupied_host(np.array(cells)) * 255)
-			enrg_out.write(energy_host(np.array(cells)) * 4)
+			host_cells = cells.copy_to_host()
+			occu_out.write(occupied_host(np.array(host_cells)) * 255)
+			enrg_out.write(energy_host(np.array(host_cells)) * 4)
 		print()
 	print('Total time taken: {}'.format(time.time() - t0))
 
