@@ -9,7 +9,8 @@ from util.save_video import video_stream
 
 # Simulation parameters:
 n_iterations = 100
-x_dim, y_dim = 250, 250
+n_iterations_per_frame = 10
+x_dim, y_dim = 1500, 1000
 init_prob = 0.1
 energy_survival_threshold = 10
 
@@ -45,7 +46,7 @@ def main(args):
 		 video_stream((x_dim, y_dim), 'enrg.mp4', scale=3) as enrg_out:
 		for i in range(n_iterations):
 			print(i, end=', ', flush=True)
-			simulate_cells[n_blocks, n_threads](cells, rng_states, 1)
+			simulate_cells[n_blocks, n_threads](cells, rng_states, n_iterations_per_frame)
 			host_cells = cells.copy_to_host()
 			occu_out.write(occupied_host(np.array(host_cells)) * 255)
 			enrg_out.write(energy_host(np.array(host_cells)) * 4)
