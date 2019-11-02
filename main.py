@@ -8,8 +8,8 @@ from numba.cuda import random
 from util.save_video import video_stream
 
 # Simulation parameters:
-n_iterations = 50
-x_dim, y_dim = 80, 80
+n_iterations = 100
+x_dim, y_dim = 250, 250
 init_prob = 0.1
 energy_survival_threshold = 10
 
