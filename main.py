@@ -8,18 +8,18 @@ from numba.cuda import random
 from util.save_video import video_stream
 
 # Simulation parameters:
-n_iterations = 100
-x_dim, y_dim = 100, 100
+n_iterations = 50
+x_dim, y_dim = 80, 80
 init_prob = 0.1
 energy_survival_threshold = 10
 
-@cuda.jit(device=True, inline=True)
-def light_function(_pos):
+def light_function_host(_pos):
 	return 3
+light_function = cuda.jit(light_function_host, device=True, inline=True)
 
-@cuda.jit(device=True, inline=True)
-def co2_function(_pos):
+def co2_function_host(_pos):
 	return 1
+co2_function = cuda.jit(co2_function_host, device=True, inline=True)
 
 gather_light_energy_cost = 1
 gather_light_energy_prob = 0.3
@@ -46,8 +46,8 @@ def main(args):
 		for i in range(n_iterations):
 			print(i, end=', ', flush=True)
 			simulate_cells[n_blocks, n_threads](cells, rng_states, 1)
-			occu_out.write(occupied(np.array(cells)) * 255)
-			enrg_out.write(energy(np.array(cells)) * 4)
+			occu_out.write(occupied_host(np.array(cells)) * 255)
+			enrg_out.write(energy_host(np.array(cells)) * 4)
 		print()
 	print('Total time taken: {}'.format(time.time() - t0))
 
@@ -110,13 +110,13 @@ def check_survival(cells, i, j):
 	if energy(cells[i][j]) < energy_survival_threshold:
 		cells[i][j] = 0
 
-@cuda.jit(device=True, inline=True)
-def occupied(cell):
+def occupied_host(cell):
 	return cell & 1
+occupied = cuda.jit(occupied_host, device=True, inline=True)
 
-@cuda.jit(device=True, inline=True)
-def energy(cell):
+def energy_host(cell):
 	return cell >> energy_offset & (0xffffffff >> (32 - energy_bits))
+energy = cuda.jit(energy_host, device=True, inline=True)
 
 @cuda.jit(device=True, inline=True)
 def set_energy(cells, i, j, val):
