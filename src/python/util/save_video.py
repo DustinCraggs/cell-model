@@ -18,7 +18,7 @@ def video_stream(dims, out_path, scale=1):
 	    .filter('scale', s='{}x{}'.format(dims[0] * scale, dims[1] * scale), flags='neighbor')
 	    .output(out_path, pix_fmt='yuv420p')
 	    .overwrite_output()
-	    .run_async(pipe_stdin=True, quiet=True)
+	    .run_async(pipe_stdin=True, quiet=False)
 	)
 	vid_out.write = lambda frame : vid_out.stdin.write(frame.astype(np.uint8).tobytes())
 	yield vid_out

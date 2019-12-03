@@ -5,7 +5,7 @@
 #SBATCH -n 1
 #SBATCH --time=00:02:00
 #SBATCH --gres=gpu:1
-#SBATCH --mem=50MB
+#SBATCH --mem=5GB
 
 module load Anaconda3/5.0.1
 source activate cell

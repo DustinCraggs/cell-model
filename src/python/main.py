@@ -8,11 +8,11 @@ from numba.cuda import random
 from util.save_video import video_stream
 
 # Simulation parameters:
-n_iterations = 100
-n_iterations_per_frame = 10
-x_dim, y_dim = 1500, 1000
-init_prob = 0.1
-energy_survival_threshold = 10
+n_iterations = 10
+n_iterations_per_frame = 1
+x_dim, y_dim = 8000, 8000
+init_prob = 0.3
+energy_survival_threshold = 5
 
 def light_function_host(_pos):
 	return 3
@@ -23,7 +23,7 @@ def co2_function_host(_pos):
 co2_function = cuda.jit(co2_function_host, device=True, inline=True)
 
 gather_light_energy_cost = 1
-gather_light_energy_prob = 0.3
+gather_light_energy_prob = 0.45
 
 # Data packing: (TODO: calc offset)
 energy_offset = 1
@@ -42,8 +42,11 @@ def main(args):
 	cells = allocate_cell_memory()
 	rng_states = allocate_rng_states()
 	initialise_cells[n_blocks, n_threads](cells, rng_states, init_prob)
-	with video_stream((x_dim, y_dim), 'occu.mp4', scale=3) as occu_out, \
-		 video_stream((x_dim, y_dim), 'enrg.mp4', scale=3) as enrg_out:
+	with video_stream((x_dim, y_dim), 'occu.mp4', scale=1) as occu_out, \
+		 video_stream((x_dim, y_dim), 'enrg.mp4', scale=1) as enrg_out:
+		host_cells = cells.copy_to_host()
+		occu_out.write(occupied_host(np.array(host_cells)) * 255)
+		enrg_out.write(energy_host(np.array(host_cells)) * 4)
 		for i in range(n_iterations):
 			print(i, end=', ', flush=True)
 			simulate_cells[n_blocks, n_threads](cells, rng_states, n_iterations_per_frame)
