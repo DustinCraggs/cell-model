@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdio.h>
 
-#include "CellModel.cuh"
+#include "cell_model.cuh"
 
 // TODO: Const things
 

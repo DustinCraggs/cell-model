@@ -1,9 +1,9 @@
 #include <iostream>
 #include <curand_kernel.h>
 
-#include "CellModel.cuh"
-#include "Cell.cuh"
-#include "CudaUtil.hpp"
+#include "cell_model.cuh"
+#include "cell.h"
+#include "cuda_util.h"
 
 __global__ void initialise_cells(Cell *cells, int w, int h, float density);
 __global__ void simulate_cells(Cell *cells, CellModelParams params, int nIterations);

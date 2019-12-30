@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Cell.cuh"
+#include "cell.h"
 
 struct CellModelParams {
 	int w, h;
