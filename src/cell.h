@@ -1,7 +1,18 @@
-#include <iostream>
+#pragma once
 
-#include "Cell.cuh"
+#include <curand_kernel.h>
 
-std::ostream& operator<<(std::ostream &stream, const Cell &cell) {
-	return stream << "O" << cell.occupied << " E" << cell.energy << " W" << cell.waste;
-}
+struct Cell {
+	enum precision {
+		nbits_occupied = 1,
+		nbits_energy = 6,
+		nbits_waste = 6
+	};
+
+	bool occupied: nbits_occupied;
+	int energy: nbits_energy;
+	int waste: nbits_waste;
+	curandState randState;
+};
+
+std::ostream& operator<<(std::ostream &stream, const Cell &cell);
