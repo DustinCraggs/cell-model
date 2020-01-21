@@ -72,9 +72,15 @@ void simulate_cells(Cell *cells, CellModelParams params, int nIterations) {
 	int y = blockIdx.y * blockDim.y + threadIdx.y;
 	if (x < params.w && y < params.h) {
 		for (int i = 0; i < nIterations; i++) {
+			// TODO: Stride stuff
 			iterate(cells, params, x, y);
 		}
 	}
+}
+
+__device__
+void reduce(Cell *cells) {
+	
 }
 
 __device__

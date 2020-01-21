@@ -2,13 +2,22 @@
 
 #include "cell.h"
 
+struct CudaParams {
+	int nThreads = 32;
+	int nubBlocks;
+	int blockSize;
+
+	// TODO: Reduction buffer params
+}
+
 struct CellModelParams {
 	int w, h;
 	float initial_density;
 	int survival_threshold;
 	float energy_loss_p;
 	float gather_light_energy_p;
-	int nThreads = 32;
+
+	CudaParams cudaParams;
 
 	CellModelParams(int w, int h) {
 		this->w = w;
