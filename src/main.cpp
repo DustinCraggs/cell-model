@@ -7,11 +7,15 @@
 
 int main() {
 	CellModelParams params(5, 5);
-	params.initial_density = 0.5;
-	params.survival_threshold = 3;
-	params.energy_loss_p = 0.9;
-	params.gather_light_energy_p = 0.5;
+	params.initialDensity = 0.5;
+	params.survivalThreshold = 3;
+	params.energyLossP = 0.9;
+	params.gatherLightEnergyP = 0.5;
 
+	// Cuda parameters:
+	params.cudaParams.blockSize = 1024;
+	params.cudaParams.numBlocks = 10;
+	
 	CellModel model(params);
 	model.printCells();
 

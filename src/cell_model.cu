@@ -12,22 +12,18 @@ __device__ void energy_death(Cell *cells, int idx, int energy_threshold);
 __device__ void use_energy(Cell *cells, int idx, float probability);
 __device__ void acquire_energy(Cell *cells, int idx, float probability);
 
-CellModel::CellModel(CellModelParams params) :
-		params(params),
-		blockSize(params.nThreads, params.nThreads, 1),
-		numBlocks((
-			params.w + params.nThreads - 1) / params.nThreads,
-			(params.h + params.nThreads - 1) / params.nThreads,
-			1
-		) {
-	cudaMallocManaged(&cells, params.w * params.h * sizeof(Cell));
+CellModel::CellModel(CellModelParams params) : params(params) {
+	int nCells = params.w * params.h * params.d;
+	cudaMallocManaged(&cells, nCells * sizeof(Cell));
 	initialise();
 }
 
 void CellModel::printCells() {
 	for (int i = 0; i < params.h; i++) {
 		for (int j = 0; j < params.w; j++) {
-			std::cout << cells[j + i * params.w] << " | ";
+			for (int k = 0;  < params.d; k++) {
+				std::cout << cells[j + i * params.w] << " | ";
+			}
 		}
 		std::cout << std::endl;
 	}
@@ -36,9 +32,7 @@ void CellModel::printCells() {
 void CellModel::initialise() {
 	initialise_cells<<<numBlocks, blockSize>>>(
 		cells,
-		params.w,
-		params.h,
-		params.initial_density
+		params
 	);
 	checkCudaError(cudaPeekAtLastError());
 	cudaDeviceSynchronize();
@@ -50,13 +44,17 @@ void CellModel::simulate(int nIterations) {
 	cudaDeviceSynchronize();
 }
 
-__global__
-void initialise_cells(Cell *cells, int w, int h, float density) {
-	int x = blockIdx.x * blockDim.x + threadIdx.x;
-	int y = blockIdx.y * blockDim.y + threadIdx.y;
+double* CellModel::getStatistics() {
 
-	if (x < w && y < h) {
-		int idx = x + y * w;
+}
+
+__global__
+void initialise_cells(Cell *cells, CellModelParams params) {
+	int tid = blockIdx.x * blockDim.x + threadIdx.x;
+	int n = params.w * params.h * params.d;
+
+	// Stride loop:
+	for (int idx = tid; tid < n; tid += blockDim.x * gridDim.x) {
 		curand_init(1000, idx, 0, &cells[idx].randState);
 		if (curand_uniform(&cells[idx].randState) < density) {
 			cells[idx].occupied = true;
@@ -68,24 +66,22 @@ void initialise_cells(Cell *cells, int w, int h, float density) {
 
 __global__
 void simulate_cells(Cell *cells, CellModelParams params, int nIterations) {
-	int x = blockIdx.x * blockDim.x + threadIdx.x;
-	int y = blockIdx.y * blockDim.y + threadIdx.y;
-	if (x < params.w && y < params.h) {
-		for (int i = 0; i < nIterations; i++) {
-			// TODO: Stride stuff
-			iterate(cells, params, x, y);
+	int tid = blockIdx.x * blockDim.x + threadIdx.x;
+	int n = params.w * params.h * params.d;
+
+	for (int i = 0; i < nIterations; i++) {
+		// Stride loop:
+		for (int idx = tid; tid < n; tid += blockDim.x * gridDim.x) {
+			int x = idx % params.w;
+			int y = (idx / params.w) % params.h;
+			int z = idx / (params.w * params.h);
+			iterate(cells, params, idx, x, y, z);
 		}
 	}
 }
 
 __device__
-void reduce(Cell *cells) {
-	
-}
-
-__device__
-void iterate(Cell *cells, CellModelParams params, int x, int y) {
-	int idx = x + y * params.w;
+void iterate(Cell *cells, CellModelParams params, int idx, int x, int y, int z) {
 	if (cells[idx].occupied) {
 		use_energy(cells, idx, params.energy_loss_p);
 		acquire_energy(cells, idx, params.gather_light_energy_p);

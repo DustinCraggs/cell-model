@@ -3,25 +3,25 @@
 #include "cell.h"
 
 struct CudaParams {
-	int nThreads = 32;
-	int nubBlocks;
-	int blockSize;
-
+	int blockSize = 1024;
+	int numBlocks = 10;
+	
 	// TODO: Reduction buffer params
 }
 
 struct CellModelParams {
-	int w, h;
-	float initial_density;
-	int survival_threshold;
-	float energy_loss_p;
-	float gather_light_energy_p;
+	int w, h, d;
+	float initialDensity;
+	int survivalThreshold;
+	float energyLossProb;
+	float gatherLightEnergyP;
 
 	CudaParams cudaParams;
 
-	CellModelParams(int w, int h) {
+	CellModelParams(int w, int h, int d) {
 		this->w = w;
 		this->h = h;
+		this->d = d;
 	}
 };
 
@@ -30,6 +30,7 @@ public:
 	CellModel(CellModelParams params);
 	void printCells();
 	void simulate(int nIterations);
+	double* getStatistics();
 private:
 	void initialise();
 
