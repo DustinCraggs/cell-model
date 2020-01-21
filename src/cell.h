@@ -1,4 +1,5 @@
 #pragma once
+#pragma pack(push, 1)
 
 #include <curand_kernel.h>
 
@@ -17,8 +18,27 @@ struct Cell {
 	int co2: 		nbits_co2;
 	int chem: 		nbits_chem;
 
+	// TOT: 33
+	// TODO: Remove tests:
+	// int t1: 5;
+	// int t2: 5;
+	// int t3: 5;
+	// int t4: 5;
+	// int t6: 5;
+	// 58
+	// int t7: 5;
+	// int t8: 5;
+	// 68
+	// int t9: 5;
+	// int t10: 5;
+	// int t11: 5;
+	// int t12: 5;
+	// 88
+
 	// Simulation:
 	curandState randState;
 };
+
+#pragma pack(pop)
 
 std::ostream& operator<<(std::ostream &stream, const Cell &cell);
