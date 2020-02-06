@@ -3,11 +3,11 @@ cmake_minimum_required(VERSION 3.9)
 project(cell_model LANGUAGES CXX CUDA)
 
 add_library(model STATIC
-	src/cell.cpp
-	src/cell.h
 	src/cell_model.cu
 	src/cell_model.cuh
-	src/cuda_util.h
+	src/cell/movement.cuh
+	src/cell/movement.cu
+	src/cell_model_params.h
 )
 
 target_compile_features(model PUBLIC cxx_std_11)

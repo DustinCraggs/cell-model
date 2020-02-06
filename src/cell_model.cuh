@@ -1,31 +1,7 @@
 #pragma once
 
-#include "cell.h"
-
-struct CudaParams {
-	dim3 blockSize = 1024;
-	dim3 numBlocks = 10;
-
-	// TODO: Reduction buffer params
-};
-
-struct CellModelParams {
-	int w, h, d;
-	int nCells;
-	float initialDensity;
-	int survivalThreshold;
-	float energyLossProb;
-	float gatherLightEnergyProb;
-
-	CudaParams cudaParams;
-
-	CellModelParams(int w, int h, int d) {
-		this->w = w;
-		this->h = h;
-		this->d = d;
-		this->nCells = w * h * d;
-	}
-};
+#include "grid_element.h"
+#include "cell_model_params.h"
 
 class CellModel {
 public:
@@ -33,14 +9,16 @@ public:
 	void printCells();
 	void simulate(int nIterations);
 	void synchronizeData();
+	void writeFrame(int dIdx);
 
 	// Statistics:
 	int numberOfLivingCells();
 	double totalEnergy();
 private:
 	void initialise();
+	void iterateRandomMovement();
 
-	Cell *cells;
+	GridElement *grid;
 	CellModelParams params;
 	dim3 blockSize;
 	dim3 numBlocks;

@@ -1,8 +1,19 @@
 #!/bin/bash
 
+if [ ! -d build ] ; then
+	mkdir build
+	cd build
+	cmake ..
+	cd ..
+fi
+
 # build:
 rm slurm-*.out
 make -C build -s
+# Check for compilation error:
+if [[ $? -ne 0 ]] ; then
+	exit 1
+fi
 
 # run:
 sbatch test_job.sh
