@@ -8,26 +8,62 @@
 #define CURRENT_TIME std::chrono::steady_clock::now()
 #define TIME_DIFF(T0, T1) std::chrono::duration_cast<std::chrono::milliseconds>(T1 - T0).count()
 
-void printStatistics(CellModel model) {
-	auto t0 = CURRENT_TIME;
+void printStatisticsCsvRow(CellModel model, int iterationNumber) {
 	int nLiving = model.numberOfLivingCells();
-	// std::cerr << TIME_DIFF(t0, CURRENT_TIME) << std::endl;
+	float averageCellEnergy = nLiving > 0 ? model.totalCellEnergy()/nLiving : 0;
+	float averageCellChem = nLiving > 0 ? model.totalCellChem()/nLiving : 0;
+	float averageCellToxin = nLiving > 0 ? model.totalCellToxin()/nLiving : 0;
+
+	// Environment:
+	float totalEnvChem = model.totalEnvChem();
+	float totalEnvToxin = model.totalEnvToxin();
+
+	printf("%d,%d,%f,%f,%f,%f,%f\n", iterationNumber, nLiving, averageCellEnergy, averageCellChem,
+		averageCellToxin, totalEnvChem, totalEnvToxin);
+}
+
+void printStatistics(CellModel model) {
+	int nLiving = model.numberOfLivingCells();
 
 	std::cerr << "N living cells: " << nLiving << std::endl;
 	if (nLiving != 0) {
-		std::cerr << "Enrg avg.: " << model.totalEnergy()/nLiving << std::endl;
+		std::cerr << "Enrg avg.: " << model.totalCellEnergy()/nLiving << std::endl;
 	}
 	std::cerr << std::endl;
 }
 
 int main(int argc, char **argv) {
+	// CellModelParams params(8, 8, 1);
 	CellModelParams params(128, 128, 1);
-	params.initialDensity = 0.2;
-	params.survivalThreshold = 20;
-	params.energyUsageRate = 20;
-	params.lightEnergyConversionRate = 15;
-	params.co2EnergyConversionRate = 10;
-	params.movementProbability = 0.01;
+	// CellModelParams params(256, 256, 1);
+
+	// Initialisation:
+	params.initialCellDensity = 0.1;
+	params.initialChemDensity = 0.3;
+	params.initialChemMax = 255;
+	params.initialNdToxinDensity = 0.05;
+	params.initialNdToxinMax = 150;
+
+	// Thresholds:
+	params.energySurvivalThreshold = 20;
+	params.chemSurvivalThreshold = 1;
+	params.dToxinDeathThreshold = 254;
+	params.dToxinDigestionThreshold = 100;
+	params.ndToxinDeathThreshold = 254;
+
+	// Energy rates:
+	params.energyUsageRate = 15;
+	params.chemUsageRate = 1;
+	params.lightEnergyConversionRate = 10;
+	params.co2EnergyConversionRate = 15;
+	params.digestibleToxinGenerationRate = 1;
+	params.digestibleToxinDigestionRate = 1;
+	params.digestibleToxinDigestionCost = 1;
+
+	params.chemAcquisitionRate = 30;
+
+	// Movement:
+	params.movementProbability = 0.1;
 
 	// Cuda parameters:
 	params.cudaParams.blockSize = 1024;
@@ -39,14 +75,21 @@ int main(int argc, char **argv) {
 	model.writeFrame(0);
 	std::cerr << "Iteration: " << 0 << std::endl;
 	printStatistics(model);
+	// printStatisticsCsvRow(model, 0);
 
 	for (int i = 0; i < 500; i++) {
 		model.simulate(1);
+		model.synchronizeData();
 		if ((i + 1) % 50 == 0) {
 			std::cerr << "Iteration: " << i + 1 << std::endl;
 			printStatistics(model);
 		}
-		model.synchronizeData();
+		if ((i + 1) % 10 == 0) {
+			// printStatisticsCsvRow(model, i);
+		}
 		model.writeFrame(0);
 	}
 }
+
+// auto t0 = CURRENT_TIME;
+// std::cerr << TIME_DIFF(t0, CURRENT_TIME) << std::endl;

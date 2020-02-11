@@ -13,7 +13,11 @@ public:
 
 	// Statistics:
 	int numberOfLivingCells();
-	double totalEnergy();
+	double totalCellEnergy();
+	double totalCellChem();
+	double totalCellToxin();
+	double totalEnvChem();
+	double totalEnvToxin();
 private:
 	void initialise();
 	void iterateRandomMovement();
