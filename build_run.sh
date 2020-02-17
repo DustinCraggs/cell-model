@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Check if cmake has been run:
 if [ ! -d build ] ; then
 	mkdir build
 	cd build
@@ -7,19 +8,19 @@ if [ ! -d build ] ; then
 	cd ..
 fi
 
-# build:
-rm slurm-*.out
+# Move any previous results to results/old/
+mkdir -p results/old/
+mv slurm-*.out results/old/
+
+# Build:
 make -C build -s
-# Check for compilation error:
+# Exit upon compilation error:
 if [[ $? -ne 0 ]] ; then
 	exit 1
 fi
 
-# run:
-sbatch test_job.sh
+# Run:
+sbatch --wait test_job.sh
 
-# output results:
-sleep 3
-cat slurm-*.out
-sleep 9
+# Print results:
 cat slurm-*.out

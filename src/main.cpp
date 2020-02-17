@@ -1,7 +1,8 @@
 #include <iostream>
 #include <chrono>
 
-#include "cell_model.cuh"
+#include "model/cell_model.cuh"
+#include "model/cell_model_params.h"
 
 // TODO: Const things
 
