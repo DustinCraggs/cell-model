@@ -27,7 +27,10 @@ add_library(model STATIC
 	src/model/operation/movement.cu
 
 	# Output:
-	
+	src/model/output/video.h
+	src/model/output/video.cpp
+	src/model/output/statistics.h
+	src/model/output/statistics.cpp
 )
 
 target_compile_features(model PUBLIC cxx_std_11)

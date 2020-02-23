@@ -1,0 +1,61 @@
+{
+	"model" : {
+		"width" : 20,
+		"height" : 20,
+		"depth" : 10,
+		"iterations" : 250,
+
+		"initialCellDensity" : 0.1,
+		"initialChemDensity" : 0.3,
+		"initialChemMax" : 255,
+		"initialNdToxinDensity" : 0.05,
+		"initialNdToxinMax" : 150,
+
+		"energySurvivalThreshold" : 20,
+		"chemSurvivalThreshold" : 1,
+		"dToxinDeathThreshold" : 254,
+		"dToxinDigestionThreshold" : 100,
+		"ndToxinDeathThreshold" : 254,
+
+		"energyUsageRate" : 15,
+		"chemUsageRate" : 1,
+		"chemAcquisitionRate" : 30,
+		"lightEnergyConversionRate" : 10,
+		"co2EnergyConversionRate" : 15,
+		"digestibleToxinGenerationRate" : 1,
+		"digestibleToxinDigestionRate" : 1,
+		"digestibleToxinDigestionCost" : 1,
+
+		"movementProbability" : 0.1
+	},
+
+	"cuda" : {
+		"blockSize" : 1024,
+		"numBlocks" : 10
+	},
+
+	"output" : {
+		"video" : {
+			"interval" : 1,
+			"energy" : "experiment/results/energy.mp4",
+			"chemical" : "experiment/results/chem.mp4",
+			"toxin" : "experiment/results/toxin.mp4"
+		},
+		"statistics" : {
+			"file" : "experiment/results/stats.csv",
+			"console" : true,
+			"interval" : 50
+		}
+	},
+
+	"experiment" : {
+		"output_directory" : "output/",
+		"variables" : {
+			"iterations" : {
+				"model.width" : [10],
+				"model.height" : [40, 50]
+			}
+		},
+		"independent_variable" : "model.width"
+	}
+}
