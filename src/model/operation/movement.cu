@@ -3,95 +3,124 @@
 #include <stdio.h>
 
 #include "movement.cuh"
+
+#include "util.cuh"
 #include "../grid_element.h"
-#include "../cell_model_params.h"
+#include "../param/simulation_parameters.h"
 
-#define MOVEMENT_DIRECTIONS {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}
+#define N_RANDOM_NUMBERS_USED 3
 
-__device__
-double get_move_position(GridElement element, CellModelParams &params, int *x, int *y);
+__device__ double get_intended_move(GridElement element,
+	ModelParameters &params, GridElement::Position &newPosition);
+__device__ void move_position(int direction[3],
+	GridElement::Position &position, ModelParameters &params);
 
-__device__
-extern int get_idx(int x, int y, int z, CellModelParams &params);
+namespace movement {
 
-__device__
-void set_move_direction(GridElement *grid, GridElement &element, int x, int y, int z, CellModelParams &params) {
-	int new_x = x, new_y = y;
-	int tie_breaker = get_move_position(element, params, &new_x, &new_y);
-	int new_idx = get_idx(new_x, new_y, z, params);
+	__device__
+	void prepare(GridElement *grid, GridElement &element, ModelParameters &params) {
+		if (element.cell.has_subcell || element.cell.is_subcell) {
+			return;
+		}
+		element.canMove = false;
+		GridElement::Position newPosition;
+		double tieBreaker = get_intended_move(element, params, newPosition);
 
-	// Check if new position valid:
-	if ((new_idx < 0) || (new_idx >= params.gridSize)) {
-		return;
-	}
-	// Check if new position not occupied:
-	if (grid[new_idx].cell.alive) {
-		return;
-	}
-	// Check if another cell is moving into the same square:
-	int directions[4][2] = MOVEMENT_DIRECTIONS;
-	for (int *dir : directions) {
-		int check_x = new_x + dir[0];
-		int check_y = new_y + dir[1];
+		if (tieBreaker == -1) {
+			// Cell is dead, or new position is out of bounds, or cell is
+			// not moving this iteration 
+			return;
+		}
 
-		if (!(check_x == x && check_y == y)) {
-			int check_idx = get_idx(check_x, check_y, z, params);
-			if (!grid[check_idx].cell.alive) {
-				continue;
-			}
-			if ((check_idx < 0) || (check_idx >= params.gridSize)) {
-				continue;
-			}
-			
-			int check_tie_breaker = get_move_position(grid[check_idx], params, &check_x, &check_y);
-			bool isSamePosition = (check_x == new_x) && (check_y == new_y);
-			if (isSamePosition && (check_tie_breaker >= tie_breaker)) {
-				return;
+		if (grid[newPosition.idx].cell.alive) {
+			// New position is already occupied on this iteration
+			return;
+		}
+
+		// Check if any other adjacent cell intends to move into newPosition
+		static int directions[6][3] = DIRECTIONS_6_WAY;
+		for (int *direction : directions) {
+			GridElement::Position otherPosition = newPosition;
+			move_position(direction, otherPosition, params);
+
+			if (otherPosition.idx != -1 && otherPosition != element.position) {
+				double otherTieBreaker = get_intended_move(
+					grid[otherPosition.idx],
+					params,
+					otherPosition
+				);
+				if (otherPosition == newPosition && otherTieBreaker >= tieBreaker) {
+					// Another cell will move into this cell's intended
+					// position, and the other cell has a higher random tie
+					// breaker
+					return;
+				}
 			}
 		}
-	}
-
-	// This cell can move:
-	curandState tempState = element.randState;
-	curand_uniform(&tempState);
-	if (curand_uniform(&tempState) < params.movementProbability) {
 		element.canMove = true;
 	}
+
+	__device__
+	void execute(GridElement *grid, GridElement &element, ModelParameters &params) {
+		if (element.canMove) {
+			element.canMove = false;
+			GridElement::Position newPosition;
+			get_intended_move(element, params, newPosition);
+			
+			// Update new cell:
+			grid[newPosition.idx].cell = element.cell;
+
+			// Update old cell:
+			element.cell.alive = false;
+		}
+
+		// Update this GridElement's random number generator:
+		for (int i = 0; i < N_RANDOM_NUMBERS_USED; i++) {
+			curand_uniform(&element.randState);
+		}
+	}
 }
 
 __device__
-void move_cells(GridElement *grid, GridElement &element, int x, int y, int z, CellModelParams &params) {
-	if (element.canMove) {
-		get_move_position(element, params, &x, &y);
-
-		// Update new cell:
-		int new_idx = get_idx(x, y, z, params);
-		grid[new_idx].cell = element.cell;
-
-		// Update old cell:
-		element.cell = {};
-		element.canMove = false;
+double get_intended_move(GridElement element, ModelParameters &params, 
+		GridElement::Position &newPosition) {
+	if (!element.cell.alive) {
+		return -1;
 	}
-	for (int i = 0; i < 2; i++) {
-		curand_uniform(&element.randState);
-	}
-}
 
-__device__
-double get_move_position(GridElement element, CellModelParams &params, int *x, int *y) {
+	// Copy the GridElement's random state to avoid changing it:
 	curandState tempState = element.randState;
-	double rand = curand_uniform(&tempState);
-	if (rand < 0.25) {
-		*y -= 1;
-	} else if (rand < 0.5) {
-		*y += 1;
-		rand -= 0.25;
-	} else if (rand < 0.75) {
-		*x -= 1;
-		rand -= 0.5;
-	} else {
-		*x += 1;
-		rand -= 0.75;
+
+	double moveRoll = curand_uniform(&tempState);
+	if (moveRoll >= params.movementProbability) {
+		// No movement:
+		return -1;
 	}
-	return rand;
+
+	double directionRoll = curand_uniform(&tempState);
+	if (directionRoll == 1.0) {
+		directionRoll = 0.0;
+	}
+	static int directions[6][3] = DIRECTIONS_6_WAY;
+	int *direction = directions[(int) (directionRoll * 7)];
+	newPosition = element.position;
+	move_position(direction, newPosition, params);
+	
+	if (newPosition.idx == -1) {
+		// Position out of bounds, no movement:
+		return -1;
+	}
+
+	double tieBreakRoll = curand_uniform(&tempState);
+	return tieBreakRoll;
+}
+
+__device__
+void move_position(int direction[3], GridElement::Position &position,
+		ModelParameters &params) {
+	position.x = position.x + direction[0];
+	position.y = position.y + direction[1];
+	position.z = position.z + direction[2];
+	position.idx = util::get_idx(position.x, position.y, position.z,
+		params);
 }

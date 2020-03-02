@@ -1,25 +1,24 @@
 #pragma once
 
 #include "grid_element.h"
-#include "cell_model_params.h"
+#include "param/simulation_parameters.h"
 
 class CellModel {
 public:
-	CellModel(CellModelParams params);
+	CellModel(SimulationParameters params);
 	void printCells();
 	void simulate(int nIterations);
 	void synchronizeData();
 
-	// get host frame buffer
 	GridElement* getHostGrid();
-	// get device frame buffer
-	// ... getDeviceGrid();
+	GridElement* getDeviceGrid();
+	SimulationParameters getParams();
 private:
 	void initialise();
 	void iterateRandomMovement();
 
 	GridElement *grid;
-	CellModelParams params;
+	SimulationParameters params;
 	dim3 blockSize;
 	dim3 numBlocks;
 };

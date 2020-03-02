@@ -1,9 +1,7 @@
 #include <iostream>
 #include <chrono>
 
-#include "model/cell_model.cuh"
-#include "model/cell_model_params.h"
-#include "model/output/video.h"
+#include "model/cell_model_driver.h"
 
 // TODO: Const things
 
@@ -13,26 +11,8 @@ int main(int argc, char **argv) {
 		std::cerr << "E.g: simulate experiment/config/example.json" << std::endl;
 		std::exit(EXIT_FAILURE);
 	}
-
-	OutputParams outputParams;
-	auto params = CellModelParams::fromJson(argv[1], &outputParams);
-	CellModel model(params);
-
-	VideoOutput videoOutput(params, outputParams);
-	
-	// If statistics enabled, open
-	std::cout << "SIMULATE" << std::endl;
-	for (int i = 0; i < params.iterations; i++) {
-		std::cout << "SIMULATE: " << i << std::endl;
-		if ((i % outputParams.video.interval) == 0) {
-			videoOutput.writeFrame(model);
-		}
-		model.simulate(1);
-	}
-
-	videoOutput.close();
-
-	// If statistics enabled, close
+	CellModelDriver driver(argv[1]);
+	driver.run();
 }
 
 
@@ -65,9 +45,9 @@ int main(int argc, char **argv) {
 // }
 
 // int main(int argc, char **argv) {
-// 	// // CellModelParams params(8, 8, 1);
-// 	// CellModelParams params(128, 128, 1);
-// 	// // CellModelParams params(256, 256, 1);
+// 	// // CellModelParameters params(8, 8, 1);
+// 	// CellModelParameters params(128, 128, 1);
+// 	// // CellModelParameters params(256, 256, 1);
 // 	// // Initialisation:
 // 	// params.initialCellDensity = 0.1;
 // 	// params.initialChemDensity = 0.3;
@@ -100,7 +80,7 @@ int main(int argc, char **argv) {
 // 	// params.cudaParams.blockSize = 1024;
 // 	// params.cudaParams.numBlocks = 10;
 	
-// 	auto params = CellModelParams::fromJson(argv[1]);
+// 	auto params = CellModelParameters::fromJson(argv[1]);
 // 	CellModel model(params);
 // 	model.synchronizeData();
 

@@ -1,15 +1,18 @@
 {
 	"model" : {
-		"width" : 20,
-		"height" : 20,
+		"width" : 10,
+		"height" : 10,
 		"depth" : 10,
-		"iterations" : 250,
+		"iterations" : 1000,
 
 		"initialCellDensity" : 0.1,
 		"initialChemDensity" : 0.3,
 		"initialChemMax" : 255,
 		"initialNdToxinDensity" : 0.05,
 		"initialNdToxinMax" : 150,
+
+		"maxCellSize" : 15,
+		"growthThreshold" : 250,
 
 		"energySurvivalThreshold" : 20,
 		"chemSurvivalThreshold" : 1,
@@ -26,36 +29,53 @@
 		"digestibleToxinDigestionRate" : 1,
 		"digestibleToxinDigestionCost" : 1,
 
-		"movementProbability" : 0.1
+		"movementProbability" : 0.1,
+
+		"randomSeed" : {
+			"cell" : 1000,
+			"environment" : 2000,
+			"grid" : 3000
+		}
 	},
 
 	"cuda" : {
 		"blockSize" : 1024,
-		"numBlocks" : 10
+		"numBlocks" : 1024
 	},
 
 	"output" : {
 		"video" : {
 			"interval" : 1,
-			"energy" : "experiment/results/energy.mp4",
-			"chemical" : "experiment/results/chem.mp4",
-			"toxin" : "experiment/results/toxin.mp4"
+			"energy" : "energy.mp4",
+			"chemical" : "chem.mp4",
+			"toxin" : "toxin.mp4"
 		},
 		"statistics" : {
-			"file" : "experiment/results/stats.csv",
+			"file" : "statistics.csv",
 			"console" : true,
 			"interval" : 50
+		},
+		"runtime" : {
+			"file" : "runtime.csv"
 		}
 	},
 
 	"experiment" : {
-		"output_directory" : "output/",
+		"output_directory" : "experiment/results/runtime/",
+		"job_script" : "experiment/job/base_job.sh",
 		"variables" : {
 			"iterations" : {
-				"model.width" : [10],
-				"model.height" : [40, 50]
+				"model.width" : [100, 150],
+				"model.height" : [100, 150],
+				"model.depth" : [100, 150],
+				"total_environment_size" : [1000000, 3375000]
 			}
 		},
-		"independent_variable" : "model.width"
+		"_independent_variable" : "model.width",
+		"independent_variable" : "total_environment_size",
+		"plots" : {
+			"individual" : true,
+			"runtime" : true
+		}
 	}
 }

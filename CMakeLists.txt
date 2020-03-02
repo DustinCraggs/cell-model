@@ -18,19 +18,17 @@ target_include_directories(json INTERFACE ${nlohmann_json_SOURCE_DIR}/single_inc
 # TODO: Consider using subdirectory CMakeLists.txt files:
 add_library(model STATIC
 	src/model/cell_model.cu
-	src/model/cell_model.cuh
-	src/model/cell_model_params.h
-	src/model/cell_model_params.cpp
+	src/model/cell_model_driver.cpp
+	src/model/param/simulation_parameters.cpp
 
 	# Operations:
-	src/model/operation/movement.cuh
+	src/model/operation/util.cu
 	src/model/operation/movement.cu
+	src/model/operation/growth.cu
 
 	# Output:
-	src/model/output/video.h
 	src/model/output/video.cpp
-	src/model/output/statistics.h
-	src/model/output/statistics.cpp
+	src/model/output/statistics.cu
 )
 
 target_compile_features(model PUBLIC cxx_std_11)

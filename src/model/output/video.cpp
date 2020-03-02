@@ -3,67 +3,64 @@
 #include <string>
 #include <stdlib.h>
 
+#include "../param/simulation_parameters.h"
+
 using std::string;
 
-VideoOutput::VideoOutput(CellModelParams params, OutputParams outputParams) {
+VideoOutput::VideoOutput(SimulationParameters params) {
 	energyPipe = openVideoOutputProcess(
-		outputParams.video.energyPath,
-		params.w,
-		params.h
+		params.output.video.energyPath,
+		params.model.w,
+		params.model.h
 	);
 	chemPipe = openVideoOutputProcess(
-		outputParams.video.chemPath,
-		params.w,
-		params.h
+		params.output.video.chemPath,
+		params.model.w,
+		params.model.h
 	);
 	toxinPipe = openVideoOutputProcess(
-		outputParams.video.toxinPath,
-		params.w,
-		params.h
+		params.output.video.toxinPath,
+		params.model.w,
+		params.model.h
 	);
 
-	std::cout << "EP " << energyPipe << std::endl;
-	std::cout << "CP " << chemPipe << std::endl;
-	std::cout << "TP " << toxinPipe << std::endl;
-
-	nPixels = params.w * params.h;
+	nPixels = params.model.w * params.model.h;
 	frameBuffer = new unsigned char[nPixels * 3];
+}
+
+void VideoOutput::write(CellModel model, int iteration) {
+	writeFrame(model);
 }
 
 void VideoOutput::writeFrame(CellModel model) {
 	GridElement *grid;
 	if (energyPipe || chemPipe || toxinPipe) {
 		grid = model.getHostGrid();
-	}
+		if (energyPipe) {
+			getEnergyFrame(grid, nPixels, frameBuffer, 0);
+			fwrite(frameBuffer, sizeof(unsigned char), nPixels * 3, energyPipe);
+		}
 
-	if (energyPipe) {
-		getEnergyFrame(grid, nPixels, frameBuffer, 0);
-		fwrite(frameBuffer, sizeof(unsigned char), nPixels * 3, energyPipe);
-	}
+		if (chemPipe) {
+			getChemFrame(grid, nPixels, frameBuffer, 0);
+			fwrite(frameBuffer, sizeof(unsigned char), nPixels * 3, chemPipe);
+		}
 
-	if (chemPipe) {
-		getChemFrame(grid, nPixels, frameBuffer, 0);
-		fwrite(frameBuffer, sizeof(unsigned char), nPixels * 3, chemPipe);
-	}
-
-	if (toxinPipe) {
-		getToxinFrame(grid, nPixels, frameBuffer, 0);
-		fwrite(frameBuffer, sizeof(unsigned char), nPixels * 3, toxinPipe);
+		if (toxinPipe) {
+			getToxinFrame(grid, nPixels, frameBuffer, 0);
+			fwrite(frameBuffer, sizeof(unsigned char), nPixels * 3, toxinPipe);
+		}
 	}
 }
 
 void VideoOutput::close() {
-	// TODO: Check if opened
-	// if (!pclose(energyPipe) || !pclose(chemPipe) || !pclose(toxinPipe)) {
-	// 	std::cerr << "Error: Failed to close one or more FFmpeg output processes" << std::endl;
-	// }
-	if (pclose(energyPipe) != 0) {
+	if (energyPipe && pclose(energyPipe) != 0) {
 		std::cerr << "Error: Failed to close energy FFmpeg output process" << std::endl;
 	}
-	if (pclose(chemPipe) != 0) {
+	if (chemPipe && pclose(chemPipe) != 0) {
 		std::cerr << "Error: Failed to close chem FFmpeg output process" << std::endl;
 	}
-	if (pclose(toxinPipe) != 0) {
+	if (toxinPipe && pclose(toxinPipe) != 0) {
 		std::cerr << "Error: Failed to close toxin FFmpeg output process" << std::endl;
 	}
 }
@@ -77,9 +74,8 @@ FILE* VideoOutput::openVideoOutputProcess(std::string path, int w, int h) {
 		string("ffmpeg -hide_banner -loglevel panic -y -f rawvideo -pixel_format rgb24 -video_size ")
 		+ std::to_string(w) + string("x") + std::to_string(h)
 		+ string(" -i - -c:v h264 -pix_fmt yuv420p -s 512x512 -sws_flags neighbor ")
-		+ path
-		+ string(" > debug/ffmpeg.txt");
-	std::cout << ffmpegCommand << std::endl;
+		+ path;
+
 	FILE *outputFile = popen(ffmpegCommand.c_str(), "w");
 	if (!outputFile) {
 		std::cerr << "Error: Could not open FFmpeg process for video output" << std::endl;

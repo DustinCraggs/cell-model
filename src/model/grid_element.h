@@ -26,6 +26,18 @@ struct Cell {
 
 	unsigned int dToxin_storage: 	nbits_d_toxin_storage;
 	unsigned int ndToxin_storage: 	nbits_nd_toxin_storage;
+
+	// Multicell:
+	bool is_subcell;
+	int has_subcell;
+	// TODO: Replace with idx?
+	struct NextCellOffset {
+		int x, y, z;
+	} nextCellOffset;
+	int parent_idx;
+
+	// Cell's internal rng (to be used only when operating on this cell)
+	curandState randState;
 };
 
 struct Environment {
@@ -38,13 +50,25 @@ struct Environment {
 	unsigned int chem: nbits_chem;
 	unsigned int dToxin: nbits_d_toxin;
 	unsigned int ndToxin: nbits_nd_toxin;
+
+	// Environment's internal rng (to be used only when operating on this
+	// environment element)
+	curandState randState;
 };
 
 struct GridElement {
 	Cell cell;
 	Environment environment;
 
+	// Position:
+	struct Position {
+		int x, y, z;
+		int idx;
+	} position;
+
 	// Simulation state:
 	curandState randState;
-	bool canMove, canConsumeChem;
+
+	// Status: (TODO: move and optimise)
+	bool canMove, canConsumeChem, canGrow;
 };
