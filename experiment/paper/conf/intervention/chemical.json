@@ -1,0 +1,93 @@
+{
+	"model" : {
+		"width" : 100,
+		"height" : 100,
+		"depth" : 100,
+		"iterations" : 1000,
+
+		"lightIntensity" : 1,
+		"temperature" : 20,
+		"optimalTemperature" : 20,
+		"functionalTemperatureRange" : 10,
+
+		"initialCellDensity" : 0.01,
+		"initialChemDensity" : 0.8,
+		"initialChemMax" : 255,
+		"initialNdToxinDensity" : 0.05,
+		"initialNdToxinMax" : 150,
+
+		"maxCellSize" : 15,
+		"growthThreshold" : 250,
+		"growthCost" : 150,
+
+		"energySurvivalThreshold" : 20,
+		"chemSurvivalThreshold" : 1,
+		"dToxinDeathThreshold" : 254,
+		"dToxinDigestionThreshold" : 200,
+		"ndToxinDeathThreshold" : 254,
+
+		"energyUsageRate" : 15,
+		"chemUsageRate" : 1,
+		"chemAcquisitionRate" : 30,
+		"lightEnergyConversionRate" : 10,
+		"co2EnergyConversionRate" : 15,
+		"digestibleToxinGenerationRate" : 1,
+		"digestibleToxinDigestionRate" : 1,
+		"digestibleToxinDigestionCost" : 1,
+
+		"movementProbability" : 0.1,
+
+		"randomSeed" : {
+			"cell" : 1000,
+			"environment" : 2000,
+			"grid" : 3000
+		}
+	},
+
+	"interventions" : [
+		{
+			"type" : "invertedChemRedistribution",
+			"function" : "activate",
+			"value" : 0.5,
+			"iteration" : 50
+		}
+	],
+
+	"cuda" : {
+		"blockSize" : 1024,
+		"numBlocks" : 1024
+	},
+
+	"output" : {
+		"video" : {
+			"interval" : 1,
+			"energy" : "energy.mp4",
+			"chemical" : "chem.mp4",
+			"toxin" : "toxin.mp4"
+		},
+		"statistics" : {
+			"file" : "statistics.csv",
+			"console" : true,
+			"interval" : 1
+		},
+		"runtime" : {
+			"file" : "runtime.csv"
+		}
+	},
+
+	"experiment" : {
+		"output_directory" : "experiment/paper3/results/intervention/chem/t1/",
+		"job_script" : "experiment/job/base_job.sh",
+		"variables" : {
+			"iterations" : {
+				"interventions.0.iteration" : [1, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+			}
+		},
+		"independent_variable" : "interventions.0.iteration",
+		"plots" : {
+			"individual" : true,
+			"runtime" : true,
+			"metrics" : true
+		}
+	}
+}
