@@ -32,31 +32,38 @@ void StatisticsOutput::close() {
 	outputStream.close();
 }
 
-struct CellOccupied {
+struct IsMaincell {
 	__device__
 	int operator()(const GridElement& g) const {
 		return g.cell.alive && !g.cell.is_subcell ? 1 : 0;
 	}
 };
 
+struct CellOccupied {
+	__device__
+	int operator()(const GridElement& g) const {
+		return g.cell.alive ? 1 : 0;
+	}
+};
+
 struct CellEnergy {
 	__device__
 	double operator()(const GridElement& g) const {
-		return g.cell.alive && !g.cell.is_subcell ? g.cell.energy : 0.0;
+		return g.cell.alive ? g.cell.energy : 0.0;
 	}
 };
 
 struct CellChem {
 	__device__
 	double operator()(const GridElement& g) const {
-		return g.cell.alive && !g.cell.is_subcell ? g.cell.chem : 0.0;
+		return g.cell.alive ? g.cell.chem : 0.0;
 	}
 };
 
 struct CellToxin {
 	__device__
 	double operator()(const GridElement& g) const {
-		return g.cell.alive && !g.cell.is_subcell ? g.cell.dToxin + g.cell.ndToxin : 0.0;
+		return g.cell.alive ? g.cell.dToxin + g.cell.ndToxin : 0.0;
 	}
 };
 
@@ -79,7 +86,7 @@ int StatisticsOutput::numberOfLivingCells(CellModel model) {
 	return thrust::transform_reduce(
 		gridPtr,
 		gridPtr + model.getParams().gridSize(),
-		CellOccupied(),
+		IsMaincell(),
 		0,
 		thrust::plus<int>()
 	);

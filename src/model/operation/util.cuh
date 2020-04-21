@@ -3,9 +3,12 @@
 #include "../param/simulation_parameters.h"
 #include "../grid_element.h"
 
-#define DIRECTIONS_6_WAY {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}}
+#define DIRECTIONS_6_WAY_ARRAY {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}}
 
 namespace util {
+	__device__
+	static int DIRECTIONS_6_WAY[6][3] = DIRECTIONS_6_WAY_ARRAY;
+	
 	__host__ __device__
 	int get_idx(int x, int y, int z, ModelParameters &params);
 

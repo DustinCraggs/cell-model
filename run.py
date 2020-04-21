@@ -9,6 +9,7 @@ import shutil
 import copy
 import time
 
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -37,16 +38,18 @@ def run(args):
             job_logs = glob.glob('slurm-*.out')
             print('Job complete; pausing for output')
             # Temporary: Wait for system to finish writing to log:
-            time.sleep(5)
+            time.sleep(6)
             subprocess.run(['cat'] + job_logs)
             subprocess.run(['mv'] + job_logs + [os.path.dirname(path)])
         else:
             subprocess.run(['sbatch', config['experiment']['job_script'], path])
+            time.sleep(2)
 
-    # if not args.synchronous:
-    #     job_logs = glob.glob('slurm-*.out')
-    #     subprocess.run(['cat'] + job_logs)
-    #     subprocess.run(['mv'] + job_logs + [os.path.dirname(os.path.dirname(path))])
+    if not args.synchronous:
+        time.sleep(6)
+        job_logs = glob.glob('slurm-*.out')
+        subprocess.run(['cat'] + job_logs)
+        subprocess.run(['mv'] + job_logs + [os.path.dirname(os.path.dirname(path))])
 
 def vis(args):
     with open(args.configuration) as f:
@@ -63,10 +66,16 @@ def vis(args):
     plots = config['experiment']['plots']
     if 'individual' in plots and plots['individual'] == True:
         for o in overrides:
+            print('Plotting individual: {}'.format(o))
             path = _get_config_path(config, o)
             _plot_individual(path, overrides, config)
+    print('Plotting runtime')
     if 'runtime' in plots and plots['runtime'] == True:
         _plot_runtime(config, overrides, args)
+
+    print('Plotting metrics')
+    if 'metrics' in plots and plots['metrics'] == True:
+        _plot_metrics(config, overrides, args)
 
 def combine(args):
     pass
@@ -92,8 +101,65 @@ def _plot_runtime(config, overrides, args):
     basedir = os.path.dirname(os.path.dirname(paths[0]))
     plt.title('Simulation run time (1000 iterations)')
     plt.ylabel('Run time (s)')
-    plt.xlabel('Total grid size')
+    plt.xlabel(config['experiment']['independent_variable'])
     plt.savefig(os.path.join(basedir, 'runtime.png'), dpi=300)
+    plt.close()
+
+def _plot_metrics(config, overrides, args):
+    print('plotting metrics')
+    paths = [_get_config_path(config, o) for o in overrides]
+    try:
+        indep_var = config['experiment']['independent_variable']
+    except KeyError:
+        sys.exit('No \'independent_variable\' specified in experiment config')
+    indep_vals = _get_indep_vals(indep_var, overrides)
+
+    dfs = []
+    for p in paths:
+        directory = os.path.dirname(p)
+        df = pd.read_csv(os.path.join(directory, config['output']['statistics']['file']))
+        df = df.replace([np.inf, -np.inf], 0)
+        dfs.append(pd.DataFrame(df.mean()).T)
+
+    metrics = pd.concat(dfs, axis=0)
+    basedir = os.path.dirname(os.path.dirname(paths[0]))
+    metrics['indep_var'] = indep_vals
+    metrics.to_csv(os.path.join(basedir, 'metrics.csv'))
+
+    metrics.iloc[:, [1,-1]].plot(x='indep_var')
+    plt.title('Average number of living cells')
+    plt.ylabel('Average number of living cells')
+    plt.xlabel(config['experiment']['independent_variable'])
+    plt.savefig(os.path.join(basedir, 'number_of_cells.png'), dpi=300)
+    plt.close()
+
+    metrics.iloc[:, [2,3,4,-1]].plot(x='indep_var')
+    plt.title('Cell resource summary')
+    plt.ylabel('Average quantity of each resource')
+    plt.xlabel(config['experiment']['independent_variable'])
+    plt.savefig(os.path.join(basedir, 'cell_metrics.png'), dpi=300)
+    plt.close()
+
+    metrics.iloc[:, [5,6,-1]].plot(x='indep_var')
+    plt.title('Environmental resource summary')
+    plt.ylabel('Total quantity of each resource')
+    plt.xlabel(config['experiment']['independent_variable'])
+    plt.savefig(os.path.join(basedir, 'environment_metrics.png'), dpi=300)
+    plt.close()
+
+    metrics.iloc[:, [5,-1]].plot(x='indep_var')
+    plt.title('Environmental chemicals')
+    plt.ylabel('Total quantity of chemicals in environment')
+    plt.xlabel(config['experiment']['independent_variable'])
+    plt.savefig(os.path.join(basedir, 'environment_chem.png'), dpi=300)
+    plt.close()
+
+    metrics.iloc[:, [6,-1]].plot(x='indep_var')
+    plt.title('Environmental waste')
+    plt.ylabel('Total quantity of waste in environment')
+    plt.xlabel(config['experiment']['independent_variable'])
+    plt.savefig(os.path.join(basedir, 'environment_waste.png'), dpi=300)
+    plt.close()
 
 def _get_indep_vals(indep_var, overrides):
     vals = []
@@ -110,10 +176,18 @@ def _plot_individual(path, overrides, config):
     stats.iloc[:, 0:5].plot(x='iteration')
     plt.xlabel('Iteration number')
     plt.savefig(os.path.join(directory, 'CellStatistics.png'), dpi=300)
+    plt.close()
+
+    for col in stats.columns[1:]:
+        stats[['iteration', col]].plot(x='iteration')
+        plt.xlabel('Iteration number')
+        plt.savefig(os.path.join(directory, '{}.png'.format(col)), dpi=300)
+        plt.close()
 
     stats.iloc[:, [0, 5, 6]].plot(x='iteration')
     plt.xlabel('Iteration number')
     plt.savefig(os.path.join(directory, 'EnvironmentStatistics.png'), dpi=300)
+    plt.close()
 
 def _get_config_path(config, override):
     directory = config['experiment']['output_directory']
@@ -127,7 +201,7 @@ def _write_configuration(config, override):
 
     for var, val in override:
         config_var = config
-        properties = var.split('.')
+        properties = [int(v) if v.isdigit() else v for v in var.split('.')]
         for v in properties[:-1]:
             config_var = config_var[v]
         config_var[properties[-1]] = val

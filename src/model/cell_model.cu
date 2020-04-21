@@ -13,14 +13,23 @@
 
 // Cuda simulation functions:
 __global__ void initialise_grid(GridElement *grid, ModelParameters params);
-__global__ void update_cells(GridElement *grid, ModelParameters params);
-__global__ void update_environment(GridElement *grid, ModelParameters params);
-__global__ void update_interactions(GridElement *grid, ModelParameters params);
-__device__ void iterate_cell(GridElement *grid, ModelParameters params, int idx, int x, int y, int z);
+__global__ void update_cells(GridElement *grid, ModelParameters params, int iterations);
+__global__ void update_big_cells(GridElement *grid, ModelParameters params, int iterations);
+__global__ void prepare_growth(GridElement *grid, ModelParameters params, int iterations);
+__global__ void update_environment(GridElement *grid, ModelParameters &params);
+__global__ void update_interactions(GridElement *grid, ModelParameters params, int iterations);
+__global__ void update_growth_interactions(GridElement *grid, ModelParameters params, int iterations);
+__device__ void iterate_cell(GridElement *grid, ModelParameters params, int idx, int x, int y, int z, int iteration);
+
+// Interventions
+__global__ void add_new_chemicals(GridElement *grid, ModelParameters params,
+	double newChemDensity, bool invertDistribution);
 
 // GridElement initialisation functions:
 __device__ void initialise_cell(Cell &cell, int idx, ModelParameters params);
-__device__ void initialise_environment(GridElement &element, int idx, ModelParameters params);
+__device__ void initialise_environment(GridElement &element, int idx, ModelParameters &params);
+__device__ void add_chem_to_element(GridElement &element, ModelParameters &params, double density,
+	int maxAddedChem, bool invertDistribution);
 
 // Cell operations:
 __device__ void check_death(GridElement &element, ModelParameters &params);
@@ -31,10 +40,13 @@ __device__ void acquire_chem(GridElement &element, int x, int y, int z, ModelPar
 __device__ void create_d_toxin(GridElement &element, ModelParameters &params);
 __device__ void digest_d_toxin(GridElement &element, ModelParameters &params);
 
+
 // Environment distributions:
+__device__ double energy_efficiency(double temperature, double optimalTemperature,
+	double functionalTemperatureRange);
 __device__ double light_distribution(int y, int height);
 __device__ double co2_distribution(int y, int height);
-__device__ double chemical_distribution(int y, int height);
+__device__ double chemical_distribution(int y, int height, bool invertDistribution);
 
 CellModel::CellModel(SimulationParameters params) :
 		params(params),
@@ -43,6 +55,9 @@ CellModel::CellModel(SimulationParameters params) :
 	int gridSize = params.model.w * params.model.h * params.model.d;
 	std::cout << "BLOCKS: " << params.cuda.numBlocks << std::endl;
 	cudaMallocManaged(&grid, gridSize * sizeof(GridElement));
+	std::cout << gridSize << std::endl;
+	std::cout << sizeof(GridElement) << std::endl;
+	std::cout << gridSize * sizeof(GridElement) << std::endl;
 	checkCudaError(cudaPeekAtLastError());
 	initialise();
 }
@@ -60,6 +75,15 @@ SimulationParameters CellModel::getParams() {
 	return params;
 }
 
+void CellModel::updateParams(SimulationParameters params) {
+	this->params = params;
+}
+
+void CellModel::redistributeChemicals(double newChemDensity, bool invertDistribution) {
+	add_new_chemicals<<<numBlocks, blockSize>>>(grid, params.model, newChemDensity, invertDistribution);
+	checkCudaError(cudaPeekAtLastError());
+}
+
 void CellModel::initialise() {
 	initialise_grid<<<numBlocks, blockSize>>>(
 		grid,
@@ -71,7 +95,17 @@ void CellModel::initialise() {
 void CellModel::simulate(int nIterations) {
 	for (int i = 0; i < nIterations; i++) {
 		// Cells:
-		update_cells<<<numBlocks, blockSize>>>(grid, params.model);
+		update_cells<<<numBlocks, blockSize>>>(grid, params.model, iterations);
+		checkCudaError(cudaPeekAtLastError());
+		update_big_cells<<<numBlocks, blockSize>>>(grid, params.model, iterations);
+		checkCudaError(cudaPeekAtLastError());
+		update_interactions<<<numBlocks, blockSize>>>(grid, params.model, iterations);
+		// checkCudaError(cudaPeekAtLastError());
+
+		// Growth:
+		prepare_growth<<<numBlocks, blockSize>>>(grid, params.model, iterations);
+		checkCudaError(cudaPeekAtLastError());
+		update_growth_interactions<<<numBlocks, blockSize>>>(grid, params.model, iterations);
 		checkCudaError(cudaPeekAtLastError());
 
 		// Environment
@@ -79,10 +113,36 @@ void CellModel::simulate(int nIterations) {
 		checkCudaError(cudaPeekAtLastError());
 
 		// Simulation:
-		update_interactions<<<numBlocks, blockSize>>>(grid, params.model);
-		checkCudaError(cudaPeekAtLastError());
+		this->iterations++;
 	}
 }
+
+__global__
+void update_big_cells(GridElement *grid, ModelParameters params, int iterations) {
+	int tid = blockIdx.x * blockDim.x + threadIdx.x;
+	// Stride loop:
+	int gridSize = params.w * params.h * params.d;
+	for (int idx = tid; idx < gridSize; idx += blockDim.x * gridDim.x) {
+		// Large cells:
+		if (grid[idx].cell.alive && grid[idx].cell.has_subcell && !grid[idx].cell.is_subcell) {
+			growth::checkDeathAndDistributeResources(grid, grid[idx], params);
+		}
+		// growth::prepare(grid, grid[idx], params);
+	}
+}
+
+__global__
+void prepare_growth(GridElement *grid, ModelParameters params, int iterations) {
+	int tid = blockIdx.x * blockDim.x + threadIdx.x;
+	// Stride loop:
+	int gridSize = params.w * params.h * params.d;
+	for (int idx = tid; idx < gridSize; idx += blockDim.x * gridDim.x) {
+		if (grid[idx].cell.alive) {
+			growth::prepare(grid, grid[idx], params, iterations);
+		}
+	}
+}
+
 
 void CellModel::synchronizeData() {
 	checkCudaError(cudaPeekAtLastError());
@@ -106,6 +166,7 @@ void initialise_grid(GridElement *grid, ModelParameters params) {
 		element.position.x = idx % params.w;
 		element.position.y = (idx / params.w) % params.h;
 		element.position.z = idx / (params.w * params.h);
+		element.canGrow = false;
 
 		if (curand_uniform(&grid[idx].randState) < params.initialCellDensity) {
 			initialise_cell(element.cell, idx, params);
@@ -122,24 +183,38 @@ void initialise_cell(Cell &cell, int idx, ModelParameters params) {
 	cell.chem = 230;
 	cell.dToxin = 10;
 	cell.ndToxin = 10;
+	cell.nextCellOffset = {0};
 	cell.parent_idx = idx;
+	cell.is_subcell = false;
+	cell.has_subcell = false;
 }
 
 __device__
-void initialise_environment(GridElement &element, int idx, ModelParameters params) {
+void initialise_environment(GridElement &element, int idx, ModelParameters &params) {
 	curand_init(params.environmentRandomSeed, idx, 0, &element.environment.randState);
-	if (curand_uniform(&element.environment.randState) < params.initialChemDensity) {
-		int y = (idx / params.w) % params.h;
-		element.environment.chem = chemical_distribution(y, params.h) * params.initialChemMax;
-	}
+
+	add_chem_to_element(element, params, params.initialChemDensity, params.initialChemMax, false);
+
 	if (curand_uniform(&element.environment.randState) < params.initialNdToxinDensity) {
 		element.environment.ndToxin = curand_uniform(&element.environment.randState) * params.initialNdToxinMax;
 	}
 	element.environment.dToxin = 0;
 }
 
+__device__
+void add_chem_to_element(GridElement &element, ModelParameters &params,
+		double density, int maxAddedChem, bool invertDistribution) {
+	if (curand_uniform(&element.environment.randState) < density) {
+		int y = (element.position.idx / params.w) % params.h;
+		int quantity = chemical_distribution(y, params.h, invertDistribution) * maxAddedChem;
+
+		int maxChem = (1 << Environment::nbits_chem) - 1;
+		element.environment.chem = min(maxChem, element.environment.chem + quantity);
+	}
+}
+
 __global__
-void update_cells(GridElement *grid, ModelParameters params) {
+void update_cells(GridElement *grid, ModelParameters params, int iterations) {
 	int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
 	// Stride loop:
@@ -148,17 +223,17 @@ void update_cells(GridElement *grid, ModelParameters params) {
 		int x = idx % params.w;
 		int y = (idx / params.w) % params.h;
 		int z = idx / (params.w * params.h);
-		iterate_cell(grid, params, idx, x, y, z);
+		iterate_cell(grid, params, idx, x, y, z, iterations);
 	}
 }
 
 __global__
-void update_environment(GridElement *grid, ModelParameters params) {
+void update_environment(GridElement *grid, ModelParameters &params) {
 
 }
 
 __global__
-void update_interactions(GridElement *grid, ModelParameters params) {
+void update_growth_interactions(GridElement *grid, ModelParameters params, int iterations) {
 	int tid = blockIdx.x * blockDim.x + threadIdx.x;
 	
 	// Stride loop:
@@ -167,13 +242,44 @@ void update_interactions(GridElement *grid, ModelParameters params) {
 		if (grid[idx].cell.alive) {
 			// movement::execute(grid, grid[idx], params);
 		} else {
-			growth::execute(grid, grid[idx], params);
+			// Large cells:
+		}
+		growth::execute(grid, grid[idx], params);
+		// if (grid[idx].cell.has_subcell && !grid[idx].cell.is_subcell) {
+		// 	growth::checkDeathAndDistributeResources(grid, grid[idx], params);
+		// }
+	}
+}
+
+__global__
+void update_interactions(GridElement *grid, ModelParameters params, int iterations) {
+	int tid = blockIdx.x * blockDim.x + threadIdx.x;
+	
+	// Stride loop:
+	int gridSize = params.w * params.h * params.d;
+	for (int idx = tid; idx < gridSize; idx += blockDim.x * gridDim.x) {
+		if (grid[idx].cell.alive) {
+			movement::execute(grid, grid[idx], params);
+		} else {
+			// growth::execute(grid, grid[idx], params);
 		}
 	}
 }
 
+// INTERVENTIONS:
+__global__
+void add_new_chemicals(GridElement *grid, ModelParameters params, double newChemDensity,
+		bool invertDistribution) {
+	int tid = blockIdx.x * blockDim.x + threadIdx.x;
+	int gridSize = params.w * params.h * params.d;
+	for (int idx = tid; idx < gridSize; idx += blockDim.x * gridDim.x) {
+		GridElement &element = grid[idx];
+		add_chem_to_element(element, params, newChemDensity, params.initialChemMax, invertDistribution);
+	}
+}
+
 __device__
-void iterate_cell(GridElement *grid, ModelParameters params, int idx, int x, int y, int z) {
+void iterate_cell(GridElement *grid, ModelParameters params, int idx, int x, int y, int z, int iteration) {
 	GridElement &element = grid[idx];
 
 	if (element.cell.alive) {
@@ -185,9 +291,30 @@ void iterate_cell(GridElement *grid, ModelParameters params, int idx, int x, int
 		create_d_toxin(element, params);
 		digest_d_toxin(element, params);
 
+		// if (!grid[element.cell.parent_idx].cell.alive) {
+		// 	element.cell.alive = false;
+		// 	// Release 90% of resources to env.:
+		// 	int maxChem = (1 << Environment::nbits_chem) - 1;
+		// 	int newChem = 0.9 * element.cell.chem + element.environment.chem;
+		// 	element.environment.chem = newChem <= maxChem ? newChem : maxChem;
+
+		// 	int maxDToxin = (1 << Environment::nbits_d_toxin) - 1;
+		// 	int newDToxin = 0.9 * element.cell.dToxin + element.environment.dToxin;
+		// 	element.environment.dToxin = newDToxin <= maxDToxin ? newDToxin : maxDToxin;
+
+		// 	int maxNDToxin = (1 << Environment::nbits_nd_toxin) - 1;
+		// 	int newNDToxin = 0.9 * element.cell.ndToxin + element.environment.ndToxin;
+		// 	element.environment.ndToxin = newNDToxin <= maxNDToxin ? newNDToxin : maxNDToxin;
+		// }
+
+		// // Large cells:
+		// if (grid[idx].cell.has_subcell && !grid[idx].cell.is_subcell) {
+		// 	growth::checkDeathAndDistributeResources(grid, grid[idx], params);
+		// }
+		// growth::prepare(grid, element, params);
+
 		// Movement:
-		// movement::prepare(grid, element, params);
-		growth::prepare(grid, element, params);
+		movement::prepare(grid, element, params);
 	}
 }
 
@@ -197,8 +324,8 @@ void check_death(GridElement &element, ModelParameters &params) {
 		return;
 	}
 	if (element.cell.energy < params.energySurvivalThreshold
-			|| element.cell.chem < params.chemSurvivalThreshold
-			|| element.cell.dToxin >= params.dToxinDeathThreshold) {
+			|| element.cell.chem < params.chemSurvivalThreshold ) {
+			// || element.cell.dToxin >= params.dToxinDeathThreshold) {
 		element.cell.alive = false;
 		// Release 90% of resources to env.:
 		int maxChem = (1 << Environment::nbits_chem) - 1;
@@ -231,10 +358,16 @@ void use_chem(GridElement &element, int y, ModelParameters &params) {
 
 __device__
 void acquire_energy(GridElement &element, int y, ModelParameters &params) {
-	int newEnergy = element.cell.energy;
+	int newEnergy = 0;
 
-	newEnergy += params.lightEnergyConversionRate * light_distribution(y, params.h);
+	newEnergy += params.lightEnergyConversionRate
+		* light_distribution(y, params.h)
+		* params.lightIntensity;
 	newEnergy += params.co2EnergyConversionRate * co2_distribution(y, params.h);
+	newEnergy *= energy_efficiency(params.temperature,
+		params.optimalTemperature, params.functionalTemperatureRange);
+
+	newEnergy += element.cell.energy;
 
 	int maxEnergy = (1 << Cell::nbits_energy) - 1;
 	element.cell.energy = newEnergy <= maxEnergy ? newEnergy : maxEnergy;
@@ -270,6 +403,14 @@ void create_d_toxin(GridElement &element, ModelParameters &params) {
 }
 
 __device__
+double energy_efficiency(double temperature, double optimalTemperature,
+		double functionalTemperatureRange) {
+	double variation = abs(temperature - optimalTemperature);
+	double variationRatio = 1 - (variation / functionalTemperatureRange);
+	return variationRatio > 0.0 ? variationRatio : 0.0;
+}
+
+__device__
 double light_distribution(int y, int height) {
 	// TODO: height must be greater than 1
 	double depth = y/(double)(height - 1);
@@ -283,8 +424,11 @@ double co2_distribution(int y, int height) {
 }
 
 __device__
-double chemical_distribution(int y, int height) {
+double chemical_distribution(int y, int height, bool invertDistribution) {
 	float depth = y/(float)(height - 1);
+	if (invertDistribution) {
+		depth = 1 - depth;
+	}
 	return pow(depth, 2.5);
 }
 

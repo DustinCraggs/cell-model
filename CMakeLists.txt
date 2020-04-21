@@ -20,6 +20,7 @@ add_library(model STATIC
 	src/model/cell_model.cu
 	src/model/cell_model_driver.cpp
 	src/model/param/simulation_parameters.cpp
+	src/model/param/intervention.cpp
 
 	# Operations:
 	src/model/operation/util.cu

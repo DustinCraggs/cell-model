@@ -13,6 +13,8 @@ public:
 	GridElement* getHostGrid();
 	GridElement* getDeviceGrid();
 	SimulationParameters getParams();
+	void updateParams(SimulationParameters params);
+	void redistributeChemicals(double newChemDensity, bool invertDistribution);
 private:
 	void initialise();
 	void iterateRandomMovement();
@@ -21,4 +23,5 @@ private:
 	SimulationParameters params;
 	dim3 blockSize;
 	dim3 numBlocks;
+	int iterations = 0;
 };

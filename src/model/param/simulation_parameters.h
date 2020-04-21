@@ -4,6 +4,8 @@
 
 using std::string;
 
+class Intervention;
+
 struct CudaParameters {
 	int blockSize = 1024;
 	int numBlocks = 10;
@@ -14,10 +16,11 @@ struct CudaParameters {
 
 struct OutputParameters {
 	struct Video {
-		int interval;
+		int interval = 1000;
 		string energyPath;
 		string chemPath;
 		string toxinPath;
+		bool active = false;
 	} video;
 
 	struct Statistics {
@@ -35,6 +38,11 @@ struct ModelParameters {
 	// Initialisation params:
 	int w, h, d;
 	int iterations;
+
+	double lightIntensity;
+	double temperature;
+	double optimalTemperature;
+	double functionalTemperatureRange;
 
 	float initialCellDensity;
 	float initialChemDensity;
@@ -82,9 +90,11 @@ public:
 	OutputParameters output;
 	ModelParameters model;
 
+	int nInterventions = 0;
+	Intervention **interventions;
+
 	static SimulationParameters fromJson(string path);
 	static SimulationParameters getDefaultParams();
 
 	int gridSize();
-
 };

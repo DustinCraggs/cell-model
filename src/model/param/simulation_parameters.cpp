@@ -1,11 +1,17 @@
 #include <iostream>
+#include <string>
+#include <vector>
 #include <fstream>
 #include <nlohmann/json.hpp>
 
 #include "simulation_parameters.h"
+#include "intervention.h"
 
 using nlohmann::json;
+using std::string;
+using std::vector;
 
+Intervention** interventionParametersFromJson(json jsonParams);
 void cudaParametersFromJson(CudaParameters &cuda, json jsonParams);
 void outputParametersFromJson(OutputParameters &output, json jsonParams);
 void modelParametersFromJson(ModelParameters &model, json jsonParams);
@@ -28,6 +34,12 @@ SimulationParameters SimulationParameters::fromJson(std::string path) {
 	json jsonParams = json::parse(std::ifstream(path));
 	SimulationParameters simulationParameters = getDefaultParams();
 
+	if (jsonParams.contains("interventions")) {
+		simulationParameters.interventions =
+			interventionParametersFromJson(jsonParams["interventions"]);
+		simulationParameters.nInterventions = jsonParams["interventions"].size();
+	}
+
 	if (jsonParams.contains("cuda")) {
 		cudaParametersFromJson(simulationParameters.cuda, jsonParams["cuda"]);
 	}
@@ -43,6 +55,30 @@ SimulationParameters SimulationParameters::fromJson(std::string path) {
 	return simulationParameters;
 }
 
+Intervention** interventionParametersFromJson(json jsonParams) {
+	Intervention **result = new Intervention*[jsonParams.size()];
+	for (int i = 0; i < jsonParams.size(); i++) {
+		auto intParams = jsonParams[i];
+		string function = intParams["function"];
+		string type = intParams["type"];
+		if (function.compare("activate") == 0) {
+			double value = intParams["value"];
+			int iterationNumber = intParams["iteration"];
+			result[i] = new ActivateIntervention(type, value, iterationNumber);
+		} else if (function.compare("cycle") == 0) {
+			vector<double> values = intParams["values"].get<vector<double>>();
+			int interval = intParams["interval"];
+			result[i] = new CycleIntervention(type, values, interval);
+		} else if (function.compare("interpolate") == 0) {
+			vector<double> values = intParams["values"].get<vector<double>>();
+			vector<int> times = intParams["times"].get<vector<int>>();
+			result[i] = new InterpolateIntervention(type, values, times);
+		}
+	}
+	return result;
+}
+
+
 void cudaParametersFromJson(CudaParameters &cuda, json jsonParams) {
 	cuda.blockSize = jsonParams.value("blockSize", cuda.blockSize);
 	cuda.numBlocks = jsonParams.value("numBlocks", cuda.numBlocks);
@@ -55,6 +91,7 @@ void outputParametersFromJson(OutputParameters &output, json jsonParams) {
 		output.video.energyPath = videoJsonParams.value("energy", "");
 		output.video.chemPath = videoJsonParams.value("chemical", "");
 		output.video.toxinPath = videoJsonParams.value("toxin", "");
+		output.video.active = true;
 	}
 	if (jsonParams.contains("statistics")) {
 		json statisticsJsonParams = jsonParams["statistics"];
@@ -73,6 +110,12 @@ void modelParametersFromJson(ModelParameters &model, json jsonParams) {
 	model.h = jsonParams.value("height", model.h);
 	model.d = jsonParams.value("depth", model.d);
 	model.iterations = jsonParams.value("iterations", model.iterations);
+
+	model.lightIntensity = jsonParams.value("lightIntensity", model.lightIntensity);
+	model.temperature = jsonParams.value("temperature", model.temperature);
+	model.optimalTemperature = jsonParams.value("optimalTemperature", model.optimalTemperature);
+	model.functionalTemperatureRange = jsonParams.value("functionalTemperatureRange", model.functionalTemperatureRange);
+
 	// Initialisation:
 	model.initialCellDensity = jsonParams.value("initialCellDensity", model.initialCellDensity);
 	model.initialChemDensity = jsonParams.value("initialChemDensity", model.initialChemDensity);
@@ -115,6 +158,12 @@ SimulationParameters SimulationParameters::getDefaultParams() {
 	// Model:
 	auto &model = params.model;
 	model.iterations = 100;
+
+	model.lightIntensity = 1;
+	model.temperature = 20;
+	model.optimalTemperature = 20;
+	model.functionalTemperatureRange = 10;
+
 	// Initialisation:
 	model.initialCellDensity = 0.1;
 	model.initialChemDensity = 0.3;

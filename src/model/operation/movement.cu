@@ -19,7 +19,7 @@ namespace movement {
 
 	__device__
 	void prepare(GridElement *grid, GridElement &element, ModelParameters &params) {
-		if (element.cell.has_subcell || element.cell.is_subcell) {
+		if (!element.cell.alive || element.cell.has_subcell || element.cell.is_subcell) {
 			return;
 		}
 		element.canMove = false;
@@ -38,7 +38,7 @@ namespace movement {
 		}
 
 		// Check if any other adjacent cell intends to move into newPosition
-		static int directions[6][3] = DIRECTIONS_6_WAY;
+		static int directions[6][3] = DIRECTIONS_6_WAY_ARRAY;
 		for (int *direction : directions) {
 			GridElement::Position otherPosition = newPosition;
 			move_position(direction, otherPosition, params);
@@ -62,16 +62,17 @@ namespace movement {
 
 	__device__
 	void execute(GridElement *grid, GridElement &element, ModelParameters &params) {
-		if (element.canMove) {
+		if (element.canMove && !element.cell.has_subcell && !element.cell.is_subcell) {
 			element.canMove = false;
 			GridElement::Position newPosition;
 			get_intended_move(element, params, newPosition);
-			
-			// Update new cell:
-			grid[newPosition.idx].cell = element.cell;
-
-			// Update old cell:
-			element.cell.alive = false;
+			if (!grid[newPosition.idx].canGrow && !grid[newPosition.idx].cell.alive) {
+				// Update new cell:
+				grid[newPosition.idx].cell = element.cell;
+				grid[newPosition.idx].cell.parent_idx = newPosition.idx;
+				// Update old cell:
+				element.cell.alive = false;
+			}
 		}
 
 		// Update this GridElement's random number generator:
@@ -101,8 +102,8 @@ double get_intended_move(GridElement element, ModelParameters &params,
 	if (directionRoll == 1.0) {
 		directionRoll = 0.0;
 	}
-	static int directions[6][3] = DIRECTIONS_6_WAY;
-	int *direction = directions[(int) (directionRoll * 7)];
+	static int directions[6][3] = DIRECTIONS_6_WAY_ARRAY;
+	int *direction = directions[(int) (directionRoll * 6)];
 	newPosition = element.position;
 	move_position(direction, newPosition, params);
 	

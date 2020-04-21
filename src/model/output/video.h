@@ -21,4 +21,5 @@ private:
 	FILE *toxinPipe = nullptr;
 	int nPixels;
 	unsigned char* frameBuffer;
+	bool active;
 };

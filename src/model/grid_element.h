@@ -28,13 +28,13 @@ struct Cell {
 	unsigned int ndToxin_storage: 	nbits_nd_toxin_storage;
 
 	// Multicell:
-	bool is_subcell;
-	int has_subcell;
+	bool is_subcell = false;
+	int has_subcell = false;
 	// TODO: Replace with idx?
 	struct NextCellOffset {
 		int x, y, z;
 	} nextCellOffset;
-	int parent_idx;
+	int parent_idx = -1;
 
 	// Cell's internal rng (to be used only when operating on this cell)
 	curandState randState;
@@ -70,5 +70,5 @@ struct GridElement {
 	curandState randState;
 
 	// Status: (TODO: move and optimise)
-	bool canMove, canConsumeChem, canGrow;
+	bool canMove = false, canConsumeChem = false, canGrow = false;
 };

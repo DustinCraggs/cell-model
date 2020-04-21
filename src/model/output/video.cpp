@@ -8,6 +8,8 @@
 using std::string;
 
 VideoOutput::VideoOutput(SimulationParameters params) {
+	this->active = params.output.video.active;
+
 	energyPipe = openVideoOutputProcess(
 		params.output.video.energyPath,
 		params.model.w,
@@ -29,6 +31,9 @@ VideoOutput::VideoOutput(SimulationParameters params) {
 }
 
 void VideoOutput::write(CellModel model, int iteration) {
+	if (!active) {
+		return;
+	}
 	writeFrame(model);
 }
 
@@ -54,6 +59,9 @@ void VideoOutput::writeFrame(CellModel model) {
 }
 
 void VideoOutput::close() {
+	if (!active) {
+		return;
+	}
 	if (energyPipe && pclose(energyPipe) != 0) {
 		std::cerr << "Error: Failed to close energy FFmpeg output process" << std::endl;
 	}
