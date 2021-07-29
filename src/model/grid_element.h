@@ -4,10 +4,8 @@
 
 struct Cell {
 	enum precision {
-		// nbits_link_map = 4,
 		nbits_alive = 1,
 		nbits_energy = 8,
-		nbits_co2 = 8,
 		nbits_chem = 8,
 		nbits_d_toxin = 8,
 		nbits_nd_toxin = 8,
@@ -15,11 +13,8 @@ struct Cell {
 		nbits_nd_toxin_storage = 8
 	};
 
-	// unsigned int linkMap:	nbits_link_map;
-
 	bool alive: 			nbits_alive;
 	unsigned int energy: 	nbits_energy;
-	unsigned int co2: 		nbits_co2;
 	unsigned int chem: 		nbits_chem;
 	unsigned int dToxin: 	nbits_d_toxin;
 	unsigned int ndToxin: 	nbits_nd_toxin;

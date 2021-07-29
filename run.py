@@ -9,6 +9,8 @@ import shutil
 import copy
 import time
 
+from collections import defaultdict
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -21,7 +23,10 @@ def run(args):
     overrides = []
     if 'variables' in config['experiment']:
         overrides = _get_overrides(config['experiment']['variables'])
-
+    
+    # Only supports one experiment:
+    overrides = overrides[0]
+    
     config_paths = [_get_config_path(config, o) for o in overrides]
 
     if args.overwrite:
@@ -43,13 +48,13 @@ def run(args):
             subprocess.run(['mv'] + job_logs + [os.path.dirname(path)])
         else:
             subprocess.run(['sbatch', config['experiment']['job_script'], path])
-            time.sleep(2)
+            time.sleep(1)
 
-    if not args.synchronous:
-        time.sleep(6)
-        job_logs = glob.glob('slurm-*.out')
-        subprocess.run(['cat'] + job_logs)
-        subprocess.run(['mv'] + job_logs + [os.path.dirname(os.path.dirname(path))])
+    # if not args.synchronous:
+    #     time.sleep(6)
+    #     job_logs = glob.glob('slurm-*.out')
+    #     subprocess.run(['cat'] + job_logs)
+    #     subprocess.run(['mv'] + job_logs + [os.path.dirname(os.path.dirname(path))])
 
 def vis(args):
     with open(args.configuration) as f:
@@ -58,7 +63,7 @@ def vis(args):
 
     overrides = []
     if 'variables' in config['experiment']:
-        overrides = _get_overrides(config['experiment']['variables'])
+        overrides = _get_overrides(config['experiment']['variables'])[0]
 
     if 'plots' not in config['experiment']:
         sys.exit('No \'plots\' found in configuration')
@@ -88,14 +93,23 @@ def _plot_runtime(config, overrides, args):
         sys.exit('No \'independent_variable\' specified in experiment config')
     indep_vals = _get_indep_vals(indep_var, overrides)
 
-    dfs = []
-    for p in paths:
+    dfs_by_indep_val = defaultdict(list)
+    for x, p in zip(indep_vals, paths):
         directory = os.path.dirname(p)
-        dfs.append(pd.read_csv(os.path.join(directory, config['output']['runtime']['file'])))
+        df = pd.read_csv(os.path.join(directory, config['output']['runtime']['file']))
+        dfs_by_indep_val[x].append(df)
+
+    dfs = []
+    for indep_val, df_list in dfs_by_indep_val.items():
+        df = pd.concat(df_list, axis=0)
+        df['indep_var'] = indep_val
+        dfs.append(pd.DataFrame(df.mean()).T)
+
     times = pd.concat(dfs, axis=0)
+    
     print(times)
     print(indep_vals)
-    times['indep_var'] = indep_vals
+
     times['total_time'] = times['total_time']/1000
     times.plot(x='indep_var')
     basedir = os.path.dirname(os.path.dirname(paths[0]))
@@ -113,17 +127,23 @@ def _plot_metrics(config, overrides, args):
     except KeyError:
         sys.exit('No \'independent_variable\' specified in experiment config')
     indep_vals = _get_indep_vals(indep_var, overrides)
-
-    dfs = []
-    for p in paths:
+    
+    dfs_by_indep_val = defaultdict(list)
+    for x, p in zip(indep_vals, paths):
         directory = os.path.dirname(p)
         df = pd.read_csv(os.path.join(directory, config['output']['statistics']['file']))
         df = df.replace([np.inf, -np.inf], 0)
+        dfs_by_indep_val[x].append(df)
+    
+    dfs = []
+    for indep_val, df_list in dfs_by_indep_val.items():
+        df = pd.concat(df_list, axis=0)
+        df['indep_var'] = indep_val
         dfs.append(pd.DataFrame(df.mean()).T)
 
     metrics = pd.concat(dfs, axis=0)
     basedir = os.path.dirname(os.path.dirname(paths[0]))
-    metrics['indep_var'] = indep_vals
+    os.makedirs(basedir, exist_ok=True)
     metrics.to_csv(os.path.join(basedir, 'metrics.csv'))
 
     metrics.iloc[:, [1,-1]].plot(x='indep_var')
@@ -133,28 +153,35 @@ def _plot_metrics(config, overrides, args):
     plt.savefig(os.path.join(basedir, 'number_of_cells.png'), dpi=300)
     plt.close()
 
-    metrics.iloc[:, [2,3,4,-1]].plot(x='indep_var')
+    metrics.iloc[:, [2,-1]].plot(x='indep_var')
+    plt.title('Average cell size')
+    plt.ylabel('Average cell size')
+    plt.xlabel(config['experiment']['independent_variable'])
+    plt.savefig(os.path.join(basedir, 'cell_size.png'), dpi=300)
+    plt.close()
+
+    metrics.iloc[:, [3,4,5,-1]].plot(x='indep_var')
     plt.title('Cell resource summary')
     plt.ylabel('Average quantity of each resource')
     plt.xlabel(config['experiment']['independent_variable'])
     plt.savefig(os.path.join(basedir, 'cell_metrics.png'), dpi=300)
     plt.close()
 
-    metrics.iloc[:, [5,6,-1]].plot(x='indep_var')
+    metrics.iloc[:, [6,7,-1]].plot(x='indep_var')
     plt.title('Environmental resource summary')
     plt.ylabel('Total quantity of each resource')
     plt.xlabel(config['experiment']['independent_variable'])
     plt.savefig(os.path.join(basedir, 'environment_metrics.png'), dpi=300)
     plt.close()
 
-    metrics.iloc[:, [5,-1]].plot(x='indep_var')
+    metrics.iloc[:, [6,-1]].plot(x='indep_var')
     plt.title('Environmental chemicals')
     plt.ylabel('Total quantity of chemicals in environment')
     plt.xlabel(config['experiment']['independent_variable'])
     plt.savefig(os.path.join(basedir, 'environment_chem.png'), dpi=300)
     plt.close()
 
-    metrics.iloc[:, [6,-1]].plot(x='indep_var')
+    metrics.iloc[:, [7,-1]].plot(x='indep_var')
     plt.title('Environmental waste')
     plt.ylabel('Total quantity of waste in environment')
     plt.xlabel(config['experiment']['independent_variable'])
@@ -231,10 +258,10 @@ def _prepend_output_directory(config, prop_path, output_dir):
 def _get_overrides(variables):
     overrides = []
     for var, vals in variables.items():
-        if var == 'iterations':
-            overrides.extend(_merge_configs(o) for o in zip(*_get_overrides(vals)))
-        elif var == 'permutations':
-            overrides.extend(_merge_configs(o) for o in itertools.product(*_get_overrides(vals)))
+        if var.startswith('iterations'):
+            overrides.append([_merge_configs(o) for o in zip(*_get_overrides(vals))])
+        elif var.startswith('permutations'):
+            overrides.append([_merge_configs(o) for o in itertools.product(*_get_overrides(vals))])
         else:
             if not isinstance(vals, list):
                 vals = [vals]

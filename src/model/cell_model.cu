@@ -100,7 +100,7 @@ void CellModel::simulate(int nIterations) {
 		update_big_cells<<<numBlocks, blockSize>>>(grid, params.model, iterations);
 		checkCudaError(cudaPeekAtLastError());
 		update_interactions<<<numBlocks, blockSize>>>(grid, params.model, iterations);
-		// checkCudaError(cudaPeekAtLastError());
+		checkCudaError(cudaPeekAtLastError());
 
 		// Growth:
 		prepare_growth<<<numBlocks, blockSize>>>(grid, params.model, iterations);
@@ -283,7 +283,7 @@ void iterate_cell(GridElement *grid, ModelParameters params, int idx, int x, int
 	GridElement &element = grid[idx];
 
 	if (element.cell.alive) {
-		// check_death(element, params);
+		check_death(element, params);
 		use_energy(element, y, params);
 		use_chem(element, y, params);
 		acquire_energy(element, y, params);

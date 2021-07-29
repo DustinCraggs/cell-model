@@ -13,6 +13,7 @@ public:
 	void close();
 
 	int numberOfLivingCells(CellModel model);
+	int numberOfOccupiedElements(CellModel model);
 	double totalCellEnergy(CellModel model);
 	double totalCellChem(CellModel model);
 	double totalCellToxin(CellModel model);

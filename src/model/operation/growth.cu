@@ -4,8 +4,6 @@
 
 #include "util.cuh"
 
-// TODO: Death of big cells
-
 namespace growth {
 	
 	__device__
@@ -170,14 +168,14 @@ namespace growth {
 		getTotalResourcesOfCell(grid, element.position.idx, &totalEnergy,
 			&totalChem, &totalDToxin, &nCells, params);
 
-		// if (totalEnergy < params.energySurvivalThreshold
-		// 		|| totalChem < params.chemSurvivalThreshold) {
-		// 		// || totalDToxin >= params.dToxinDeathThreshold) {
-		// 	releaseResourcesAndTerminateCell(grid, element.position.idx, params);
-		// } else {
+		if (totalEnergy < params.energySurvivalThreshold
+				|| totalChem < params.chemSurvivalThreshold) {
+				// || totalDToxin >= params.dToxinDeathThreshold) {
+			releaseResourcesAndTerminateCell(grid, element.position.idx, params);
+		} else {
 			redistributeResources(grid, element.position.idx, totalEnergy,
 				totalChem, totalDToxin, nCells, params);
-		// }
+		}
 	}
 
 	__device__
@@ -250,34 +248,9 @@ namespace growth {
 					subcell = &grid[util::get_idx(pos, offset, params)];
 					printf("EXC DEATH %d, %d, a: %d\n", idx, subcell->cell.parent_idx, subcell->cell.alive);
 				}
-				// break;
 			}
 		}
 	}
-
-		// GridElement *currentCell = &element;
-		// GridElement::Position pos = currentCell->position;
-		// int parent_idx = element.cell.parent_idx;
-		// while (currentCell->cell.has_subcell) {
-		// 	pos = currentCell->position;
-		// 	Cell::NextCellOffset offset = currentCell->cell.nextCellOffset;
-		// 	// printf("OFFSET: %d,%d,%d", offset.x, offset.y, offset.z)
-		// 	currentCell = &grid[util::get_idx(pos, offset, params)];
-		// 	if (!currentCell->cell.alive) {
-		// 		return;
-		// 	}
-		// 	totalEnergy += currentCell->cell.energy;
-		// 	nCells++;
-		// 	if (currentCell->cell.parent_idx != parent_idx) {
-		// 		printf("CHANGED CELL PARENT: %d!\n", currentCell->cell.alive);
-		// 	}
-		// 	if (nCells == params.maxCellSize) {
-		// 		if (currentCell->cell.has_subcell) {
-		// 			printf("EXC!\n");
-		// 		}
-		// 		return;
-		// 	}
-		// }
 
 	__device__
 	void releaseCellResources(GridElement &element) {
@@ -370,32 +343,3 @@ namespace growth {
 	}
 
 }
-
-// if (element.cell.energy < params.energySurvivalThreshold
-// 		|| element.cell.chem < params.chemSurvivalThreshold
-// 		|| element.cell.dToxin >= params.dToxinDeathThreshold) {
-// 	element.cell.alive = false;
-// 	// Release 90% of resources to env.:
-// 	int maxChem = (1 << Environment::nbits_chem) - 1;
-// 	int newChem = 0.9 * element.cell.chem + element.environment.chem;
-// 	element.environment.chem = newChem <= maxChem ? newChem : maxChem;
-
-// 	int maxDToxin = (1 << Environment::nbits_d_toxin) - 1;
-// 	int newDToxin = 0.9 * element.cell.dToxin + element.environment.dToxin;
-// 	element.environment.dToxin = newDToxin <= maxDToxin ? newDToxin : maxDToxin;
-
-// 	int maxNDToxin = (1 << Environment::nbits_nd_toxin) - 1;
-// 	int newNDToxin = 0.9 * element.cell.ndToxin + element.environment.ndToxin;
-// 	element.environment.ndToxin = newNDToxin <= maxNDToxin ? newNDToxin : maxNDToxin;
-
-// 	// TODO: Waste, energy
-// }
-
-// Iterate over subcells:
-		// Accumulate energy
-		// Accumulate shape
-		// If energy > threshold
-		// 		deduct energy cost from total energy
-		// 		pick next growth element (unoccupied, maintain rectangular)
-		// 		flag element (will be created in execute)
-		// 		redistribute energy evenly

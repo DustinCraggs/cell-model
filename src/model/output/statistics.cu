@@ -13,7 +13,7 @@ StatisticsOutput::StatisticsOutput(SimulationParameters params) {
 	outputStream = std::ofstream(params.output.statistics.file);
 	// Write header:
 	outputStream << "iteration,"
-		<< "number_of_cells,average_cell_energy,average_cell_chem,average_cell_toxin,"
+		<< "number_of_cells,average_cell_size,average_cell_energy,average_cell_chem,average_cell_toxin,"
 		<< "total_environment_chem,total_environment_toxin" << std::endl;
 }
 
@@ -21,6 +21,7 @@ void StatisticsOutput::write(CellModel model, int iteration) {
 	double n_living_cells = numberOfLivingCells(model);
 	outputStream << iteration << ','
 		<< n_living_cells << ','
+		<< numberOfOccupiedElements(model)/(double)n_living_cells << ','
 		<< totalCellEnergy(model)/n_living_cells << ','
 		<< totalCellChem(model)/n_living_cells << ','
 		<< totalCellToxin(model)/n_living_cells << ','
@@ -87,6 +88,17 @@ int StatisticsOutput::numberOfLivingCells(CellModel model) {
 		gridPtr,
 		gridPtr + model.getParams().gridSize(),
 		IsMaincell(),
+		0,
+		thrust::plus<int>()
+	);
+}
+
+int StatisticsOutput::numberOfOccupiedElements(CellModel model) {
+	thrust::device_ptr<GridElement> gridPtr = thrust::device_pointer_cast(model.getDeviceGrid());
+	return thrust::transform_reduce(
+		gridPtr,
+		gridPtr + model.getParams().gridSize(),
+		CellOccupied(),
 		0,
 		thrust::plus<int>()
 	);
