@@ -40,13 +40,8 @@ void CellModelDriver::run() {
 	StatisticsOutput statisticsOutput(params);
 	
 	// Iterate:
-	// TODO: Make video and statistics output Intervention, optimise iteration
 	for (int i = 0; i < params.model.iterations; i++) {
-		// std::cout << "Iteration: " << i << std::endl;
-		// params.interventions = new Intervention*[2];
-		// params.interventions[0] = new ActivateIntervention("energyUsageRate", 100, 30);
-		// params.interventions[0] = new ActivateIntervention("lightIntensity", 0, 30);
-		// params.nInterventions = 1;
+		std::cout << "Iteration: " << i << std::endl;
 
 		// Video output:
 		if ((i % output.video.interval) == 0) {

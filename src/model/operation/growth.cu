@@ -61,11 +61,9 @@ namespace growth {
 		currentCell->cell.nextCellOffset = {0};
 
 		GridElement *subcell = currentCell;
-		// printf("PREP TOTAL: %d\n", totalEnergy);
 		if (totalEnergy > params.growthThreshold) {
 			int *direction = getMostAdjacentDirection(grid, *subcell, params);
 			// int *direction = getRandomDirection(*subcell);
-			// int direction[3] = {1,0,0};
 
 			int targetIdx =
 				util::get_idx(pos.x + direction[0], pos.y + direction[1], pos.z + direction[2], params);
@@ -74,9 +72,6 @@ namespace growth {
 			}
 			GridElement *targetCell = &grid[targetIdx];
 			if (!targetCell->cell.alive) {
-				// if (iter < 5) {
-				// 	printf("CAN GROW: %d\n", targetIdx);
-				// }
 				subcell->cell.nextCellOffset = {direction[0], direction[1], direction[2]};
 				targetCell->canGrow = true;
 				targetCell->cell.is_subcell = false;
@@ -324,7 +319,7 @@ namespace growth {
 				int adjacencyCount = 0;
 				for (int *checkDir : util::DIRECTIONS_6_WAY) {
 					int checkIdx = util::get_idx(grid[idx].position, checkDir, params);
-					if (grid[checkIdx].cell.alive
+					if (checkIdx != -1 && grid[checkIdx].cell.alive
 							&& grid[checkIdx].cell.parent_idx == element.cell.parent_idx) {
 						adjacencyCount++;
 					}

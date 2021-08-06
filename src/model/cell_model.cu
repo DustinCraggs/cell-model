@@ -291,28 +291,6 @@ void iterate_cell(GridElement *grid, ModelParameters params, int idx, int x, int
 		create_d_toxin(element, params);
 		digest_d_toxin(element, params);
 
-		// if (!grid[element.cell.parent_idx].cell.alive) {
-		// 	element.cell.alive = false;
-		// 	// Release 90% of resources to env.:
-		// 	int maxChem = (1 << Environment::nbits_chem) - 1;
-		// 	int newChem = 0.9 * element.cell.chem + element.environment.chem;
-		// 	element.environment.chem = newChem <= maxChem ? newChem : maxChem;
-
-		// 	int maxDToxin = (1 << Environment::nbits_d_toxin) - 1;
-		// 	int newDToxin = 0.9 * element.cell.dToxin + element.environment.dToxin;
-		// 	element.environment.dToxin = newDToxin <= maxDToxin ? newDToxin : maxDToxin;
-
-		// 	int maxNDToxin = (1 << Environment::nbits_nd_toxin) - 1;
-		// 	int newNDToxin = 0.9 * element.cell.ndToxin + element.environment.ndToxin;
-		// 	element.environment.ndToxin = newNDToxin <= maxNDToxin ? newNDToxin : maxNDToxin;
-		// }
-
-		// // Large cells:
-		// if (grid[idx].cell.has_subcell && !grid[idx].cell.is_subcell) {
-		// 	growth::checkDeathAndDistributeResources(grid, grid[idx], params);
-		// }
-		// growth::prepare(grid, element, params);
-
 		// Movement:
 		movement::prepare(grid, element, params);
 	}
@@ -339,8 +317,6 @@ void check_death(GridElement &element, ModelParameters &params) {
 		int maxNDToxin = (1 << Environment::nbits_nd_toxin) - 1;
 		int newNDToxin = 0.9 * element.cell.ndToxin + element.environment.ndToxin;
 		element.environment.ndToxin = newNDToxin <= maxNDToxin ? newNDToxin : maxNDToxin;
-
-		// TODO: Waste, energy
 	}
 }
 
