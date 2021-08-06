@@ -2,7 +2,7 @@
 	"model" : {
 		"width" : 100,
 		"height" : 100,
-		"depth" : 100,
+		"depth" : 10,
 		"iterations" : 1000,
 
 		"lightIntensity" : 1,
@@ -54,8 +54,8 @@
 	],
 
 	"cuda" : {
-		"blockSize" : 1024,
-		"numBlocks" : 1024
+		"blockSize" : 512,
+		"numBlocks" : 512
 	},
 
 	"output" : {
