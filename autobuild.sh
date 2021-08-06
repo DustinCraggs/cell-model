@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # If Phoenix modules not loaded, load:
-modules="CUDA/9.2.148.1 CMake/3.12.1-GCCcore-5.4.0 Anaconda3/2019.03"
-for m in $modules; do
-	if ! module list 2>&1 | grep -q $m; then
-		module load $m
-	fi
-done
+# modules="CUDA/9.2.148.1 CMake/3.12.1-GCCcore-5.4.0 Anaconda3/2019.03"
+# for m in $modules; do
+# 	if ! module list 2>&1 | grep -q $m; then
+# 		module load $m
+# 	fi
+# done
  
 # Check if cmake has been run:
 if [ ! -d build ] ; then
