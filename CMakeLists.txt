@@ -36,6 +36,11 @@ target_compile_features(model PUBLIC cxx_std_11)
 set_target_properties(model PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 target_link_libraries(model PRIVATE json)
 
+# Set nvcc flags:
+# target_compile_options(model PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+#    --generate-line-info
+# >)
+
 # Driver:
 add_executable(simulate src/main.cpp)
 set_property(TARGET simulate PROPERTY CUDA_SEPARABLE_COMPILATION ON)
