@@ -191,19 +191,17 @@ void initialise_cell(Cell &cell, int idx, ModelParameters params, float randNum)
 	cell.is_subcell = false;
 	cell.has_subcell = false;
 
-	if(randNum < params.initialCellDensity/2) {
-
+	if(randNum < params.initialCellDensity*0.25) {
 		cell.genome = 1;
-		cell.energy = 1;
-		printf("GENOME 1! \n");
-
+	}
+	else if(randNum < params.initialCellDensity*0.5) {
+		cell.genome = 2;
+	}
+	else if(randNum < params.initialCellDensity*0.75) {
+		cell.genome = 3;
 	}
 	else {
-
-		cell.genome = 2;
-		cell.energy = 500;
-		printf("GENOME 2! \n");
-
+		cell.genome = 4;
 	}
 
 }

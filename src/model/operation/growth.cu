@@ -147,6 +147,7 @@ namespace growth {
 			element.cell.chem = 0;
 			element.cell.dToxin = 10;
 			element.cell.ndToxin = 10;
+			element.cell.genome = grid[choiceIdx].cell.genome;
 			element.cell.parent_idx = grid[choiceIdx].cell.parent_idx;
 
 		}

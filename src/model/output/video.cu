@@ -153,25 +153,33 @@ void VideoOutput::getToxinFrame(GridElement *grid, int nPixels, unsigned char *f
 void VideoOutput::getGenomeFrame(GridElement *grid, int nPixels, unsigned char *frameBuffer, int dIdx) {
 	for (int i = 0; i < nPixels; i++) {
 		GridElement element = grid[i + dIdx*nPixels];
-		if (element.cell.alive && element.cell.genome == 1) {
-			frameBuffer[i*3] = 255;
-			frameBuffer[i*3 + 1] = 0;
-			frameBuffer[i*3 + 2] = 0;
-		// } else {
-		// 	frameBuffer[i*3] = (element.environment.ndToxin + element.environment.genome) * 0.2;
-		// 	frameBuffer[i*3 + 1] = (element.environment.ndToxin + element.environment.dToxin) * 0.2;
-		// 	frameBuffer[i*3 + 2] = 0;
+		if(element.cell.alive == true) {
+			if(element.cell.genome == 1) {
+				frameBuffer[i*3] = 255;
+				frameBuffer[i*3 + 1] = 0;
+				frameBuffer[i*3 + 2] = 0;
+			}
+			else if(element.cell.genome == 2) {
+				frameBuffer[i*3] = 0;
+				frameBuffer[i*3 + 1] = 0;
+				frameBuffer[i*3 + 2] = 255;
+			}
+			else if(element.cell.genome == 3) {
+				frameBuffer[i*3] = 255;
+				frameBuffer[i*3 + 1] = 0;
+				frameBuffer[i*3 + 2] = 255;
+			}
+			else if(element.cell.genome == 4) {
+				frameBuffer[i*3] = 0;
+				frameBuffer[i*3 + 1] = 255;
+				frameBuffer[i*3 + 2] = 255;
+			}
+			else {
+				frameBuffer[i*3] = 255;
+				frameBuffer[i*3 + 1] = 255;
+				frameBuffer[i*3 + 2] = 255;
+			}
 		}
-		else if(element.cell.alive && element.cell.genome == 2) {
-			frameBuffer[i*3] = 0;
-			frameBuffer[i*3 + 1] = 0;
-			frameBuffer[i*3 + 2] = 255;
-		}
-		// else {
-		// 	frameBuffer[i*3] = 0;
-		// 	frameBuffer[i*3 + 1] = 0;
-		// 	frameBuffer[i*3 + 2] = 0;
-		// }
 		else {
 			frameBuffer[i*3] = 0;
 			frameBuffer[i*3 + 1] = element.environment.chem * 0.6;
