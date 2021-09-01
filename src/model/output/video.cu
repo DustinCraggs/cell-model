@@ -154,18 +154,28 @@ void VideoOutput::getGenomeFrame(GridElement *grid, int nPixels, unsigned char *
 	for (int i = 0; i < nPixels; i++) {
 		GridElement element = grid[i + dIdx*nPixels];
 		if (element.cell.alive && element.cell.genome == 1) {
-			frameBuffer[i*3] = (255 - element.cell.genome);
-			frameBuffer[i*3 + 1] = (element.cell.genome);
-			frameBuffer[i*3 + 2] = (element.cell.genome);
+			frameBuffer[i*3] = 255;
+			frameBuffer[i*3 + 1] = 0;
+			frameBuffer[i*3 + 2] = 0;
 		// } else {
 		// 	frameBuffer[i*3] = (element.environment.ndToxin + element.environment.genome) * 0.2;
 		// 	frameBuffer[i*3 + 1] = (element.environment.ndToxin + element.environment.dToxin) * 0.2;
 		// 	frameBuffer[i*3 + 2] = 0;
 		}
 		else if(element.cell.alive && element.cell.genome == 2) {
-			frameBuffer[i*3] = (128 - element.cell.genome);
-			frameBuffer[i*3 + 1] = (element.cell.genome);
-			frameBuffer[i*3 + 2] = (element.cell.genome);
+			frameBuffer[i*3] = 0;
+			frameBuffer[i*3 + 1] = 0;
+			frameBuffer[i*3 + 2] = 255;
+		}
+		// else {
+		// 	frameBuffer[i*3] = 0;
+		// 	frameBuffer[i*3 + 1] = 0;
+		// 	frameBuffer[i*3 + 2] = 0;
+		// }
+		else {
+			frameBuffer[i*3] = 0;
+			frameBuffer[i*3 + 1] = element.environment.chem * 0.6;
+			frameBuffer[i*3 + 2] = 0;
 		}
 	}
 }
