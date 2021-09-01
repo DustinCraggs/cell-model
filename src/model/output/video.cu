@@ -25,6 +25,11 @@ VideoOutput::VideoOutput(SimulationParameters params) {
 		params.model.w,
 		params.model.h
 	);
+	genomePipe = openVideoOutputProcess(
+		params.output.video.genomePath,
+		params.model.w,
+		params.model.h
+	);
 
 	nPixels = params.model.w * params.model.h;
 	frameBuffer = new unsigned char[nPixels * 3];
@@ -39,7 +44,7 @@ void VideoOutput::write(CellModel model, int iteration) {
 
 void VideoOutput::writeFrame(CellModel model) {
 	GridElement *grid;
-	if (energyPipe || chemPipe || toxinPipe) {
+	if (energyPipe || chemPipe || toxinPipe || genomePipe) { 
 		grid = model.getHostGrid();
 		if (energyPipe) {
 			getEnergyFrame(grid, nPixels, frameBuffer, 0);
@@ -54,6 +59,11 @@ void VideoOutput::writeFrame(CellModel model) {
 		if (toxinPipe) {
 			getToxinFrame(grid, nPixels, frameBuffer, 0);
 			fwrite(frameBuffer, sizeof(unsigned char), nPixels * 3, toxinPipe);
+		}
+
+		if(genomePipe) {
+			getGenomeFrame(grid, nPixels, frameBuffer, 0);
+			fwrite(frameBuffer, sizeof(unsigned char), nPixels * 3, genomePipe);
 		}
 	}
 }
@@ -70,6 +80,9 @@ void VideoOutput::close() {
 	}
 	if (toxinPipe && pclose(toxinPipe) != 0) {
 		std::cerr << "Error: Failed to close toxin FFmpeg output process" << std::endl;
+	}
+	if (genomePipe && pclose(genomePipe) != 0) {
+		std::cerr << "Error: Failed to close genome FFmpeg output process" << std::endl;
 	}
 }
 
@@ -133,6 +146,26 @@ void VideoOutput::getToxinFrame(GridElement *grid, int nPixels, unsigned char *f
 			frameBuffer[i*3] = (element.environment.ndToxin + element.environment.dToxin) * 0.2;
 			frameBuffer[i*3 + 1] = (element.environment.ndToxin + element.environment.dToxin) * 0.2;
 			frameBuffer[i*3 + 2] = 0;
+		}
+	}
+}
+
+void VideoOutput::getGenomeFrame(GridElement *grid, int nPixels, unsigned char *frameBuffer, int dIdx) {
+	for (int i = 0; i < nPixels; i++) {
+		GridElement element = grid[i + dIdx*nPixels];
+		if (element.cell.alive && element.cell.genome == 1) {
+			frameBuffer[i*3] = (255 - element.cell.genome);
+			frameBuffer[i*3 + 1] = (element.cell.genome);
+			frameBuffer[i*3 + 2] = (element.cell.genome);
+		// } else {
+		// 	frameBuffer[i*3] = (element.environment.ndToxin + element.environment.genome) * 0.2;
+		// 	frameBuffer[i*3 + 1] = (element.environment.ndToxin + element.environment.dToxin) * 0.2;
+		// 	frameBuffer[i*3 + 2] = 0;
+		}
+		else if(element.cell.alive && element.cell.genome == 2) {
+			frameBuffer[i*3] = (128 - element.cell.genome);
+			frameBuffer[i*3 + 1] = (element.cell.genome);
+			frameBuffer[i*3 + 2] = (element.cell.genome);
 		}
 	}
 }

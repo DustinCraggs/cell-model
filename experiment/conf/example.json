@@ -63,7 +63,8 @@
 			"interval" : 1,
 			"energy" : "energy.mp4",
 			"chemical" : "chem.mp4",
-			"toxin" : "toxin.mp4"
+			"toxin" : "toxin.mp4",
+			"genome": "genome.mp4"
 		},
 		"statistics" : {
 			"file" : "statistics.csv",

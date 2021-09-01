@@ -91,6 +91,7 @@ void outputParametersFromJson(OutputParameters &output, json jsonParams) {
 		output.video.energyPath = videoJsonParams.value("energy", "");
 		output.video.chemPath = videoJsonParams.value("chemical", "");
 		output.video.toxinPath = videoJsonParams.value("toxin", "");
+		output.video.genomePath = videoJsonParams.value("genome", "");
 		output.video.active = true;
 	}
 	if (jsonParams.contains("statistics")) {

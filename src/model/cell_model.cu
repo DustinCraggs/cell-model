@@ -26,7 +26,7 @@ __global__ void add_new_chemicals(GridElement *grid, ModelParameters params,
 	double newChemDensity, bool invertDistribution);
 
 // GridElement initialisation functions:
-__device__ void initialise_cell(Cell &cell, int idx, ModelParameters params);
+__device__ void initialise_cell(Cell &cell, int idx, ModelParameters params, float randNum);
 __device__ void initialise_environment(GridElement &element, int idx, ModelParameters &params);
 __device__ void add_chem_to_element(GridElement &element, ModelParameters &params, double density,
 	int maxAddedChem, bool invertDistribution);
@@ -168,8 +168,10 @@ void initialise_grid(GridElement *grid, ModelParameters params) {
 		element.position.z = idx / (params.w * params.h);
 		element.canGrow = false;
 
-		if (curand_uniform(&grid[idx].randState) < params.initialCellDensity) {
-			initialise_cell(element.cell, idx, params);
+		float randNum = curand_uniform(&grid[idx].randState);
+
+		if(randNum < params.initialCellDensity) {
+			initialise_cell(element.cell, idx, params, randNum);
 		}
 
 		initialise_environment(element, idx, params);
@@ -177,7 +179,8 @@ void initialise_grid(GridElement *grid, ModelParameters params) {
 }
 
 __device__
-void initialise_cell(Cell &cell, int idx, ModelParameters params) {
+void initialise_cell(Cell &cell, int idx, ModelParameters params, float randNum) {
+
 	cell.alive = true;
 	cell.energy = 230;
 	cell.chem = 230;
@@ -187,6 +190,22 @@ void initialise_cell(Cell &cell, int idx, ModelParameters params) {
 	cell.parent_idx = idx;
 	cell.is_subcell = false;
 	cell.has_subcell = false;
+
+	if(randNum < params.initialCellDensity/2) {
+
+		cell.genome = 1;
+		cell.energy = 1;
+		printf("GENOME 1! \n");
+
+	}
+	else {
+
+		cell.genome = 2;
+		cell.energy = 500;
+		printf("GENOME 2! \n");
+
+	}
+
 }
 
 __device__

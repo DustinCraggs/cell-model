@@ -20,6 +20,7 @@ struct OutputParameters {
 		string energyPath;
 		string chemPath;
 		string toxinPath;
+		string genomePath;
 		bool active = false;
 	} video;
 
