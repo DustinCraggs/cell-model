@@ -191,18 +191,59 @@ void initialise_cell(Cell &cell, int idx, ModelParameters params, float randNum)
 	cell.is_subcell = false;
 	cell.has_subcell = false;
 
-	if(randNum < params.initialCellDensity*0.25) {
+	int genomeNum = 4;
+
+	int genomeParams[4][4] = {{230, 230, 10, 10}, {460, 460, 20, 20}, {115, 115, 5, 5}, {50, 50, 50, 50}};
+
+	if(genomeNum == 1) {
+
 		cell.genome = 1;
+
 	}
-	else if(randNum < params.initialCellDensity*0.5) {
-		cell.genome = 2;
+	else if(genomeNum == 2) {
+
+		if(randNum < params.initialCellDensity*0.5) {
+			cell.genome = 1;
+		}
+		else {
+			cell.genome = 2;
+		}
+
 	}
-	else if(randNum < params.initialCellDensity*0.75) {
-		cell.genome = 3;
+	else if(genomeNum == 3) {
+
+		if(randNum < params.initialCellDensity*0.33) {
+			cell.genome = 1;
+		}
+		else if(randNum < params.initialCellDensity*0.66) {
+			cell.genome = 2;
+		}
+		else {
+			cell.genome = 3;
+		}
+		
 	}
-	else {
-		cell.genome = 4;
+	else if(genomeNum == 4) {
+
+		if(randNum < params.initialCellDensity*0.25) {
+			cell.genome = 1;
+		}
+		else if(randNum < params.initialCellDensity*0.5) {
+			cell.genome = 2;
+		}
+		else if(randNum < params.initialCellDensity*0.75) {
+			cell.genome = 3;
+		}
+		else {
+			cell.genome = 4;
+		}
+
 	}
+
+	cell.energy = genomeParams[cell.genome-1][1];
+	cell.chem = genomeParams[cell.genome-1][2];
+	cell.dToxin = genomeParams[cell.genome-1][3];
+	cell.ndToxin = genomeParams[cell.genome-1][4];
 
 }
 
