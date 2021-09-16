@@ -19,6 +19,8 @@ struct __align__(16) Cell {
 	unsigned int dToxin;
 	unsigned int ndToxin;
 	unsigned int genome;
+	unsigned int energyUsageRate;
+	unsigned int chemUsageRate;
 
 	unsigned int dToxin_storage;
 	unsigned int ndToxin_storage;

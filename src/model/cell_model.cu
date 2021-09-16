@@ -191,59 +191,27 @@ void initialise_cell(Cell &cell, int idx, ModelParameters params, float randNum)
 	cell.is_subcell = false;
 	cell.has_subcell = false;
 
-	int genomeNum = 4;
+	float genomeNum = 10;
 
-	int genomeParams[4][4] = {{230, 230, 10, 10}, {460, 460, 20, 20}, {115, 115, 5, 5}, {50, 50, 50, 50}};
+	int genomeParams[10][5] = {{230, 230, 10, 10, 1}, {230, 230, 10, 10, 1}, {230, 230, 10, 10, 1}, {230, 230, 10, 10, 1}, {230, 230, 10, 10, 1}, {230, 230, 10, 10, 1}, {230, 230, 10, 10, 1}, {230, 230, 10, 10, 5}, {230, 230, 10, 10, 10}, {230, 230, 10, 10, 15}};
 
-	if(genomeNum == 1) {
+	for(int i = 1; i <= genomeNum; i++) {
 
-		cell.genome = 1;
 
-	}
-	else if(genomeNum == 2) {
+		if(randNum <= params.initialCellDensity*((1/genomeNum)*i)) {
 
-		if(randNum < params.initialCellDensity*0.5) {
-			cell.genome = 1;
-		}
-		else {
-			cell.genome = 2;
-		}
+			cell.genome = i;
+			break;
 
-	}
-	else if(genomeNum == 3) {
-
-		if(randNum < params.initialCellDensity*0.33) {
-			cell.genome = 1;
-		}
-		else if(randNum < params.initialCellDensity*0.66) {
-			cell.genome = 2;
-		}
-		else {
-			cell.genome = 3;
-		}
-		
-	}
-	else if(genomeNum == 4) {
-
-		if(randNum < params.initialCellDensity*0.25) {
-			cell.genome = 1;
-		}
-		else if(randNum < params.initialCellDensity*0.5) {
-			cell.genome = 2;
-		}
-		else if(randNum < params.initialCellDensity*0.75) {
-			cell.genome = 3;
-		}
-		else {
-			cell.genome = 4;
 		}
 
 	}
 
-	cell.energy = genomeParams[cell.genome-1][1];
-	cell.chem = genomeParams[cell.genome-1][2];
-	cell.dToxin = genomeParams[cell.genome-1][3];
-	cell.ndToxin = genomeParams[cell.genome-1][4];
+	cell.energy = genomeParams[cell.genome-1][0];
+	cell.chem = genomeParams[cell.genome-1][1];
+	cell.dToxin = genomeParams[cell.genome-1][2];
+	cell.ndToxin = genomeParams[cell.genome-1][3];
+	cell.energyUsageRate = genomeParams[cell.genome-1][4];
 
 }
 
@@ -380,7 +348,7 @@ void check_death(GridElement &element, ModelParameters &params) {
 
 __device__
 void use_energy(GridElement &element, int y, ModelParameters &params) {
-	int newEnergy = element.cell.energy - params.energyUsageRate;
+	int newEnergy = element.cell.energy - element.cell.energyUsageRate;
 	element.cell.energy = newEnergy > 0 ? newEnergy : 0;
 }
 

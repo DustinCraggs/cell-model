@@ -146,10 +146,56 @@ def _plot_metrics(config, overrides, args):
         df["indep_var"] = indep_val
         dfs.append(pd.DataFrame(df.mean()).T)
 
+    genomeNum = config["model"]["genomeNum"];
+
     metrics = pd.concat(dfs, axis=0)
     basedir = os.path.dirname(os.path.dirname(paths[0]))
     os.makedirs(basedir, exist_ok=True)
     metrics.to_csv(os.path.join(basedir, "metrics.csv"))
+
+    numberOfVariablesBeforeGenomes = 8
+
+    averageNumGenome = [];
+
+    for x in range(genomeNum):
+        averageNumGenome.append(numberOfVariablesBeforeGenomes+x)
+
+    averageNumGenome.append(-1)
+
+    metrics.iloc[:, averageNumGenome].plot(x="indep_var")
+    plt.title("Average number of living cells by genome")
+    plt.ylabel("Average living cells")
+    plt.xlabel(config["experiment"]["independent_variable"])
+    plt.savefig(os.path.join(basedir, "genome_number_of_cells.png"), dpi=300)
+    plt.close()
+
+    averageEnergyGenome = []
+
+    for x in range(genomeNum):
+        averageEnergyGenome.append(numberOfVariablesBeforeGenomes+genomeNum+x)
+
+    averageEnergyGenome.append(-1)
+
+    metrics.iloc[:, averageEnergyGenome].plot(x="indep_var")
+    plt.title("Average number of cell energy by genome")
+    plt.ylabel("Average cell energy")
+    plt.xlabel(config["experiment"]["independent_variable"])
+    plt.savefig(os.path.join(basedir, "genome_average_energy.png"), dpi=300)
+    plt.close()
+
+    averageChemGenome = []
+
+    for x in range(genomeNum):
+        averageChemGenome.append(numberOfVariablesBeforeGenomes+(genomeNum*2)+x)
+
+    averageChemGenome.append(-1)
+
+    metrics.iloc[:, averageChemGenome].plot(x="indep_var")
+    plt.title("Average number of cell chemicals by genome")
+    plt.ylabel("Average cell chemicals")
+    plt.xlabel(config["experiment"]["independent_variable"])
+    plt.savefig(os.path.join(basedir, "genome_average_chemicals.png"), dpi=300)
+    plt.close()
 
     metrics.iloc[:, [1, -1]].plot(x="indep_var")
     plt.title("Average number of living cells")

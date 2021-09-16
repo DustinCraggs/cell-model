@@ -160,12 +160,12 @@ void VideoOutput::getGenomeFrame(GridElement *grid, int nPixels, unsigned char *
 				frameBuffer[i*3 + 2] = 0;
 			}
 			else if(element.cell.genome == 2) {
-				frameBuffer[i*3] = 0;
+				frameBuffer[i*3] = 255;
 				frameBuffer[i*3 + 1] = 0;
 				frameBuffer[i*3 + 2] = 255;
 			}
 			else if(element.cell.genome == 3) {
-				frameBuffer[i*3] = 255;
+				frameBuffer[i*3] = 0;
 				frameBuffer[i*3 + 1] = 0;
 				frameBuffer[i*3 + 2] = 255;
 			}
@@ -174,15 +174,40 @@ void VideoOutput::getGenomeFrame(GridElement *grid, int nPixels, unsigned char *
 				frameBuffer[i*3 + 1] = 255;
 				frameBuffer[i*3 + 2] = 255;
 			}
-			else {
+			else if(element.cell.genome == 5) {
+				frameBuffer[i*3] = 255;
+				frameBuffer[i*3 + 1] = 255;
+				frameBuffer[i*3 + 2] = 0;
+			}
+			else if(element.cell.genome == 6) {
 				frameBuffer[i*3] = 255;
 				frameBuffer[i*3 + 1] = 255;
 				frameBuffer[i*3 + 2] = 255;
 			}
+			else if(element.cell.genome == 7) {
+				frameBuffer[i*3] = 75;
+				frameBuffer[i*3 + 1] = 0;
+				frameBuffer[i*3 + 2] = 0;
+			}
+			else if(element.cell.genome == 8) {
+				frameBuffer[i*3] = 0;
+				frameBuffer[i*3 + 1] = 75;
+				frameBuffer[i*3 + 2] = 0;
+			}
+			else if(element.cell.genome == 9) {
+				frameBuffer[i*3] = 0;
+				frameBuffer[i*3 + 1] = 0;
+				frameBuffer[i*3 + 2] = 75;
+			}
+			else {
+				frameBuffer[i*3] = 75;
+				frameBuffer[i*3 + 1] = 0;
+				frameBuffer[i*3 + 2] = 85;
+			}
 		}
 		else {
 			frameBuffer[i*3] = 0;
-			frameBuffer[i*3 + 1] = element.environment.chem * 0.6;
+			frameBuffer[i*3 + 1] = 0;
 			frameBuffer[i*3 + 2] = 0;
 		}
 	}
