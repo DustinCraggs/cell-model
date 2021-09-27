@@ -30,7 +30,8 @@ void Intervention::updateParameter(string property, double value, CellModel &mod
 	} else if (property.compare("temperature") == 0) {
 		params.model.temperature = value;
 	} else if (property.compare("energyUsageRate") == 0) {
-		params.model.energyUsageRate = value;
+		// Changed the value to the first index of the energy usage rate
+		params.model.energyUsageRate[0] = value;
 	}
 
 	model.updateParams(params);

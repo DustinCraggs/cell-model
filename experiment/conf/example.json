@@ -26,14 +26,18 @@
 		"dToxinDigestionThreshold" : 200,
 		"ndToxinDeathThreshold" : 254,
 
-		"energyUsageRate" : 15,
-		"chemUsageRate" : 1,
 		"chemAcquisitionRate" : 30,
 		"lightEnergyConversionRate" : 10,
 		"co2EnergyConversionRate" : 15,
 		"digestibleToxinGenerationRate" : 1,
 		"digestibleToxinDigestionRate" : 1,
 		"digestibleToxinDigestionCost" : 1,
+
+		"genomeNum" : 5,
+		"startingEnergy" : [100, 200, 300, 400, 500],
+		"startingChem" : [100, 200, 300, 400, 500],
+		"energyUsageRate" : [1, 2, 3, 4, 5],
+		"chemUsageRate" : [1, 2, 3, 4, 5],
 
 		"movementProbability" : 0.1,
 

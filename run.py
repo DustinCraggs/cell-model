@@ -155,6 +155,8 @@ def _plot_metrics(config, overrides, args):
 
     numberOfVariablesBeforeGenomes = 8
 
+    # MAKE LEGEND MODULAR
+
     averageNumGenome = [];
 
     for x in range(genomeNum):
@@ -166,6 +168,7 @@ def _plot_metrics(config, overrides, args):
     plt.title("Average number of living cells by genome")
     plt.ylabel("Average living cells")
     plt.xlabel(config["experiment"]["independent_variable"])
+    plt.legend(["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"], loc = "upper left")
     plt.savefig(os.path.join(basedir, "genome_number_of_cells.png"), dpi=300)
     plt.close()
 
@@ -180,6 +183,7 @@ def _plot_metrics(config, overrides, args):
     plt.title("Average number of cell energy by genome")
     plt.ylabel("Average cell energy")
     plt.xlabel(config["experiment"]["independent_variable"])
+    plt.legend(["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"], loc = "upper left")
     plt.savefig(os.path.join(basedir, "genome_average_energy.png"), dpi=300)
     plt.close()
 
@@ -194,6 +198,7 @@ def _plot_metrics(config, overrides, args):
     plt.title("Average number of cell chemicals by genome")
     plt.ylabel("Average cell chemicals")
     plt.xlabel(config["experiment"]["independent_variable"])
+    plt.legend(["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"], loc = "upper left")
     plt.savefig(os.path.join(basedir, "genome_average_chemicals.png"), dpi=300)
     plt.close()
 

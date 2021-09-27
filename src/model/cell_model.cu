@@ -191,9 +191,8 @@ void initialise_cell(Cell &cell, int idx, ModelParameters params, float randNum)
 	cell.is_subcell = false;
 	cell.has_subcell = false;
 
-	float genomeNum = 10;
-
-	int genomeParams[10][5] = {{230, 230, 10, 10, 1}, {230, 230, 10, 10, 1}, {230, 230, 10, 10, 1}, {230, 230, 10, 10, 1}, {230, 230, 10, 10, 1}, {230, 230, 10, 10, 1}, {230, 230, 10, 10, 1}, {230, 230, 10, 10, 5}, {230, 230, 10, 10, 10}, {230, 230, 10, 10, 15}};
+	// Keep as float since it needs to be for fraction calculation.
+	float genomeNum = params.genomeNum;
 
 	for(int i = 1; i <= genomeNum; i++) {
 
@@ -207,11 +206,12 @@ void initialise_cell(Cell &cell, int idx, ModelParameters params, float randNum)
 
 	}
 
-	cell.energy = genomeParams[cell.genome-1][0];
-	cell.chem = genomeParams[cell.genome-1][1];
-	cell.dToxin = genomeParams[cell.genome-1][2];
-	cell.ndToxin = genomeParams[cell.genome-1][3];
-	cell.energyUsageRate = genomeParams[cell.genome-1][4];
+	int genomeIndex = cell.genome - 1;
+
+	cell.energy = params.startingEnergy[genomeIndex];
+	cell.chem = params.startingChem[genomeIndex];
+	cell.energyUsageRate = params.energyUsageRate[genomeIndex];
+	cell.chemUsageRate = params.chemUsageRate[genomeIndex];
 
 }
 
@@ -354,7 +354,7 @@ void use_energy(GridElement &element, int y, ModelParameters &params) {
 
 __device__
 void use_chem(GridElement &element, int y, ModelParameters &params) {
-	int newChem = element.cell.chem - params.chemUsageRate;
+	int newChem = element.cell.chem - element.cell.chemUsageRate;
 	element.cell.chem = newChem > 0 ? newChem : 0;
 }
 

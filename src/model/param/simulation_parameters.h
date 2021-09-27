@@ -64,8 +64,6 @@ struct ModelParameters {
 	int growthThreshold;
 
 	// Resource rates:
-	int energyUsageRate;
-	int chemUsageRate;
 	int chemAcquisitionRate;
 	int lightEnergyConversionRate;
 	int co2EnergyConversionRate;
@@ -80,6 +78,14 @@ struct ModelParameters {
 	int cellRandomSeed;
 	int environmentRandomSeed;
 	int gridRandomSeed;
+
+	// Genomes:
+	int genomeNum;
+	int startingEnergy[10];
+	int startingChem[10];
+	int energyUsageRate[10];
+	int chemUsageRate[10];
+
 };
 
 class SimulationParameters {
