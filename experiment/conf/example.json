@@ -84,11 +84,12 @@
 		"output_directory" : "experiment/results/final_experiments/runtime_max_cell_size_more_cells",
 		"job_script" : "experiment/job/base_job.sh",
 		"variables" : {
-			"iterations" : {
-				"model.maxCellSize" : [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+			"permutations" : {
+				"model.genomeNum" : [1, 2, 3, 4, 5],
+				"model.randomSeed.cell" : [1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009]
 			}
 		},
-		"independent_variable" : "model.maxCellSize",
+		"independent_variable" : "model.genomeNum",
 		"plots" : {
 			"individual" : true,
 			"runtime" : true,

@@ -38,6 +38,9 @@ def run(args):
     for o in overrides:
         _write_configuration(copy.deepcopy(config), o)
 
+
+    print(config_paths)
+
     for path in config_paths:
         if not args.phoenix:
             subprocess.run(["./build/simulate", path])
@@ -295,6 +298,7 @@ def _write_configuration(config, override):
     _prepend_output_directory(config, "output.video.energy", output_dir)
     _prepend_output_directory(config, "output.video.chemical", output_dir)
     _prepend_output_directory(config, "output.video.toxin", output_dir)
+    _prepend_output_directory(config, "output.video.genome", output_dir)
     _prepend_output_directory(config, "output.statistics.file", output_dir)
     _prepend_output_directory(config, "output.runtime.file", output_dir)
 
