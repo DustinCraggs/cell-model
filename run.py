@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+numberOfVariablesBeforeGenomes = 8
 
 def run(args):
     with open(args.configuration) as f:
@@ -72,11 +73,21 @@ def vis(args):
         sys.exit("No 'plots' found in configuration")
 
     plots = config["experiment"]["plots"]
+    genomeNum = config["model"]["genomeNum"];
+
+    count = 1;
+    currentGenomeNum = 1;
+    length = len(overrides)
+    seeds = length/genomeNum
+
     if "individual" in plots and plots["individual"] == True:
         for o in overrides:
             print("Plotting individual: {}".format(o))
             path = _get_config_path(config, o)
-            _plot_individual(path, overrides, config)
+            _plot_individual(path, overrides, config, currentGenomeNum)
+            if count%seeds == 0:
+                currentGenomeNum+=1
+            count+=1
     print("Plotting runtime")
     if "runtime" in plots and plots["runtime"] == True:
         _plot_runtime(config, overrides, args)
@@ -128,6 +139,7 @@ def _plot_runtime(config, overrides, args):
 def _plot_metrics(config, overrides, args):
     print("plotting metrics")
     paths = [_get_config_path(config, o) for o in overrides]
+    print(paths);
     try:
         indep_var = config["experiment"]["independent_variable"]
     except KeyError:
@@ -149,14 +161,12 @@ def _plot_metrics(config, overrides, args):
         df["indep_var"] = indep_val
         dfs.append(pd.DataFrame(df.mean()).T)
 
-    genomeNum = config["model"]["genomeNum"];
-
     metrics = pd.concat(dfs, axis=0)
     basedir = os.path.dirname(os.path.dirname(paths[0]))
     os.makedirs(basedir, exist_ok=True)
     metrics.to_csv(os.path.join(basedir, "metrics.csv"))
 
-    numberOfVariablesBeforeGenomes = 8
+    genomeNum = config["model"]["genomeNum"];
 
     # MAKE LEGEND MODULAR
 
@@ -257,7 +267,8 @@ def _get_indep_vals(indep_var, overrides):
     return vals
 
 
-def _plot_individual(path, overrides, config):
+def _plot_individual(path, overrides, config, genomeNum):
+
     directory = os.path.dirname(path)
     stats = pd.read_csv(os.path.join(directory, config["output"]["statistics"]["file"]))
 
@@ -277,6 +288,30 @@ def _plot_individual(path, overrides, config):
     plt.savefig(os.path.join(directory, "EnvironmentStatistics.png"), dpi=300)
     plt.close()
 
+    print(genomeNum)
+
+    cellNum = [0]
+    legend = []
+
+    for x in range(genomeNum):
+        cellNum.append(numberOfVariablesBeforeGenomes+x)
+
+    for x in range(genomeNum):
+        legend.append("genome" + str(x))
+
+    # cellNum.append(-1)
+
+    print(cellNum)
+
+    stats.iloc[:, cellNum].plot(x="iteration")
+    plt.title("Number of cells by genome")
+    plt.ylabel("Numbeer of cells")
+    plt.xlabel("iterations")
+    plt.legend(legend, loc = "upper left")
+    plt.savefig(os.path.join(directory, "genome_cell_num.png"), dpi=300)
+    plt.close()
+
+    # stats.iloc[:, ]
 
 def _get_config_path(config, override):
     directory = config["experiment"]["output_directory"]
