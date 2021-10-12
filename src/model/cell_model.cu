@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <chrono>
 #include <curand_kernel.h>
 
 #include "cell_model.cuh"
@@ -93,28 +94,51 @@ void CellModel::initialise() {
 }
 
 void CellModel::simulate(int nIterations) {
+
 	for (int i = 0; i < nIterations; i++) {
-		// Cells:
+		// Cells
+		auto start = std::chrono::high_resolution_clock::now();
 		update_cells<<<numBlocks, blockSize>>>(grid, params.model, iterations);
+		auto stop = std::chrono::high_resolution_clock::now();
+		durationCells = std::chrono::duration_cast<std::chrono::microseconds>(stop-start);
 		checkCudaError(cudaPeekAtLastError());
+
+		start = std::chrono::high_resolution_clock::now();
 		update_big_cells<<<numBlocks, blockSize>>>(grid, params.model, iterations);
+		stop = std::chrono::high_resolution_clock::now();
+		durationBigCells = std::chrono::duration_cast<std::chrono::microseconds>(stop-start);
 		checkCudaError(cudaPeekAtLastError());
+
+		start = std::chrono::high_resolution_clock::now();
 		update_interactions<<<numBlocks, blockSize>>>(grid, params.model, iterations);
+		stop = std::chrono::high_resolution_clock::now();
+		durationInteractions = std::chrono::duration_cast<std::chrono::microseconds>(stop-start);
 		checkCudaError(cudaPeekAtLastError());
 
 		// Growth:
+		start = std::chrono::high_resolution_clock::now();
 		prepare_growth<<<numBlocks, blockSize>>>(grid, params.model, iterations);
+		stop = std::chrono::high_resolution_clock::now();
+		durationPrepareGrowth = std::chrono::duration_cast<std::chrono::microseconds>(stop-start);
 		checkCudaError(cudaPeekAtLastError());
+
+		start = std::chrono::high_resolution_clock::now();
 		update_growth_interactions<<<numBlocks, blockSize>>>(grid, params.model, iterations);
+		stop = std::chrono::high_resolution_clock::now();
+		durationGrowthInteractions = std::chrono::duration_cast<std::chrono::microseconds>(stop-start);
 		checkCudaError(cudaPeekAtLastError());
 
 		// Environment
+		start = std::chrono::high_resolution_clock::now();
 		update_environment<<<numBlocks, blockSize>>>(grid, params.model);
+		stop = std::chrono::high_resolution_clock::now();
+		durationEnvironment = std::chrono::duration_cast<std::chrono::microseconds>(stop-start);
 		checkCudaError(cudaPeekAtLastError());
 
 		// Simulation:
 		this->iterations++;
 	}
+
 }
 
 __global__

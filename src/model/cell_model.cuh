@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include "grid_element.h"
 #include "param/simulation_parameters.h"
 
@@ -15,6 +16,14 @@ public:
 	SimulationParameters getParams();
 	void updateParams(SimulationParameters params);
 	void redistributeChemicals(double newChemDensity, bool invertDistribution);
+
+	std::chrono::duration<double> durationCells;
+	std::chrono::duration<double> durationBigCells;
+	std::chrono::duration<double> durationInteractions;
+	std::chrono::duration<double> durationPrepareGrowth;
+	std::chrono::duration<double> durationGrowthInteractions;
+	std::chrono::duration<double> durationEnvironment;
+
 private:
 	void initialise();
 	void iterateRandomMovement();
@@ -24,4 +33,6 @@ private:
 	dim3 blockSize;
 	dim3 numBlocks;
 	int iterations = 0;
+
+
 };

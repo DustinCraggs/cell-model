@@ -29,6 +29,7 @@ void CellModelDriver::writeRuntime(std::chrono::time_point<std::chrono::steady_c
 }
 
 void CellModelDriver::run() {
+
 	OutputParameters output = params.output;
 
 	auto t0 = CURRENT_TIME;
@@ -38,9 +39,19 @@ void CellModelDriver::run() {
 	// Create output modules:
 	VideoOutput videoOutput(params);
 	StatisticsOutput statisticsOutput(params);
+
+	double totalCellsDuration = 0;
+	double totalBigCellsDuration = 0;	
+	double totalInteractionsDuration = 0;
+	double totalPrepareGrowthDuration = 0;
+	double totalGrowthInteractionsDuration = 0;
+	double totalEnvironmentDuration = 0;
 	
+	auto start = std::chrono::high_resolution_clock::now();
+
 	// Iterate:
 	for (int i = 0; i <= params.model.iterations; i++) {
+
 		std::cout << "Iteration: " << i << std::endl;
 
 		// Video output:
@@ -55,7 +66,29 @@ void CellModelDriver::run() {
 
 		performInterventions(params, model, i);
 		model.simulate(1);
+
+		totalCellsDuration += model.durationCells.count();
+		totalBigCellsDuration += model.durationBigCells.count();	
+		totalInteractionsDuration += model.durationInteractions.count();
+		totalPrepareGrowthDuration += model.durationPrepareGrowth.count();
+		totalGrowthInteractionsDuration += model.durationGrowthInteractions.count();
+		totalEnvironmentDuration += model.durationEnvironment.count();
+
 	}
+
+	auto stop = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop-start);
+
+	std::cout << "Total runtime: " << duration.count() << std::endl;
+
+	std::cout << "Runtime of cell function: " << totalCellsDuration << std::endl;
+	std::cout << "Runtime of big cell function: " << totalBigCellsDuration << std::endl;
+	std::cout << "Runtime of interactions function: " << totalInteractionsDuration << std::endl;
+	std::cout << "Runtime of prepare growth function: " << totalPrepareGrowthDuration << std::endl;
+	std::cout << "Runtime of growth interactions function: " << totalGrowthInteractionsDuration << std::endl;
+	std::cout << "Runtime of environment function: " << totalEnvironmentDuration << std::endl;
+
+	std::cout << "Total function runtimes: " << totalCellsDuration + totalBigCellsDuration + totalInteractionsDuration + totalPrepareGrowthDuration + totalGrowthInteractionsDuration + totalEnvironmentDuration << std::endl;
 
 	videoOutput.close();
 	statisticsOutput.close();
