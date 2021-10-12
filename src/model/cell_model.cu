@@ -170,6 +170,8 @@ void initialise_grid(GridElement *grid, ModelParameters params) {
 
 		float randNum = curand_uniform(&grid[idx].randState);
 
+		// Different modes for density (based on genome num or not)
+		// if(randNum < (params.initialCellDensity)*(float(params.genomeNum)/10)) {
 		if(randNum < params.initialCellDensity) {
 			initialise_cell(element.cell, idx, params, randNum);
 		}
@@ -196,7 +198,8 @@ void initialise_cell(Cell &cell, int idx, ModelParameters params, float randNum)
 
 	for(int i = 1; i <= genomeNum; i++) {
 
-
+		// Different modes for density (based on genome num or not)
+		// if(randNum <= (params.initialCellDensity*((1/genomeNum)*i))/genomeNum) {
 		if(randNum <= params.initialCellDensity*((1/genomeNum)*i)) {
 
 			cell.genome = i;
