@@ -15,10 +15,12 @@ private:
 	void getEnergyFrame(GridElement *grid, int nPixels, unsigned char *frameBuffer, int dIdx);
 	void getChemFrame(GridElement *grid, int nPixels, unsigned char *frameBuffer, int dIdx);
 	void getToxinFrame(GridElement *grid, int nPixels, unsigned char *frameBuffer, int dIdx);
+	void getGenomeFrame(GridElement *grid, int nPixels, unsigned char *frameBuffer, int dIdx);
 
 	FILE *energyPipe = nullptr;
 	FILE *chemPipe = nullptr;
 	FILE *toxinPipe = nullptr;
+	FILE *genomePipe = nullptr;
 	int nPixels;
 	unsigned char* frameBuffer;
 	bool active;

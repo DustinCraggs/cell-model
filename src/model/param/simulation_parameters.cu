@@ -91,6 +91,7 @@ void outputParametersFromJson(OutputParameters &output, json jsonParams) {
 		output.video.energyPath = videoJsonParams.value("energy", "");
 		output.video.chemPath = videoJsonParams.value("chemical", "");
 		output.video.toxinPath = videoJsonParams.value("toxin", "");
+		output.video.genomePath = videoJsonParams.value("genome", "");
 		output.video.active = true;
 	}
 	if (jsonParams.contains("statistics")) {
@@ -133,8 +134,6 @@ void modelParametersFromJson(ModelParameters &model, json jsonParams) {
 	model.growthCost = jsonParams.value("growthCost", model.growthCost);
 	model.growthThreshold = jsonParams.value("growthThreshold", model.growthThreshold);
 	// Energy rates:
-	model.energyUsageRate = jsonParams.value("energyUsageRate", model.energyUsageRate);
-	model.chemUsageRate = jsonParams.value("chemUsageRate", model.chemUsageRate);
 	model.chemAcquisitionRate = jsonParams.value("chemAcquisitionRate", model.chemAcquisitionRate);
 	model.lightEnergyConversionRate = jsonParams.value("lightEnergyConversionRate", model.lightEnergyConversionRate);
 	model.co2EnergyConversionRate = jsonParams.value("co2EnergyConversionRate", model.co2EnergyConversionRate);
@@ -150,6 +149,24 @@ void modelParametersFromJson(ModelParameters &model, json jsonParams) {
 		model.environmentRandomSeed = randomSeedJson.value("environment", model.cellRandomSeed);
 		model.gridRandomSeed = randomSeedJson.value("grid", model.cellRandomSeed);
 	}
+
+	// Genomes:
+	model.genomeNum = jsonParams.value("genomeNum", model.genomeNum);
+
+	std::vector<int> startingEnergy = jsonParams["startingEnergy"];
+	std::vector<int> startingChem = jsonParams["startingChem"];
+	std::vector<int> energyUsageRate = jsonParams["energyUsageRate"];
+	std::vector<int> chemUsageRate = jsonParams["chemUsageRate"];
+
+	for(int i = 0; i < model.genomeNum; i++) {
+
+		model.startingEnergy[i] = startingEnergy.at(i);
+		model.startingChem[i] = startingChem.at(i);
+		model.energyUsageRate[i] = energyUsageRate.at(i);
+		model.chemUsageRate[i] = chemUsageRate.at(i);
+
+	}
+
 }
 
 SimulationParameters SimulationParameters::getDefaultParams() {
@@ -181,8 +198,8 @@ SimulationParameters SimulationParameters::getDefaultParams() {
 	model.growthCost = 20;
 	model.growthThreshold = 250;
 	// Energy rates:
-	model.energyUsageRate = 15;
-	model.chemUsageRate = 1;
+	model.energyUsageRate[0] = 15;
+	model.chemUsageRate[0] = 1;
 	model.chemAcquisitionRate = 30;
 	model.lightEnergyConversionRate = 10;
 	model.co2EnergyConversionRate = 15;

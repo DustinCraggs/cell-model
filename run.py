@@ -15,6 +15,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+maxGenomeNum = 10
+numberOfVariablesBeforeGenomes = 8
 
 def run(args):
     with open(args.configuration) as f:
@@ -37,6 +39,9 @@ def run(args):
 
     for o in overrides:
         _write_configuration(copy.deepcopy(config), o)
+
+
+    print(config_paths)
 
     for path in config_paths:
         if not args.phoenix:
@@ -69,11 +74,21 @@ def vis(args):
         sys.exit("No 'plots' found in configuration")
 
     plots = config["experiment"]["plots"]
+    genomeNum = config["model"]["genomeNum"];
+
+    count = 1;
+    currentGenomeNum = 1;
+    length = len(overrides)
+    seeds = length/genomeNum
+
     if "individual" in plots and plots["individual"] == True:
         for o in overrides:
             print("Plotting individual: {}".format(o))
             path = _get_config_path(config, o)
-            _plot_individual(path, overrides, config)
+            _plot_individual(path, overrides, config, currentGenomeNum)
+            if count%seeds == 0:
+                currentGenomeNum+=1
+            count+=1
     print("Plotting runtime")
     if "runtime" in plots and plots["runtime"] == True:
         _plot_runtime(config, overrides, args)
@@ -95,11 +110,19 @@ def _plot_runtime(config, overrides, args):
         sys.exit("No 'independent_variable' specified in experiment config")
     indep_vals = _get_indep_vals(indep_var, overrides)
 
+    totalRuntime = 0
+
     dfs_by_indep_val = defaultdict(list)
     for x, p in zip(indep_vals, paths):
         directory = os.path.dirname(p)
         df = pd.read_csv(os.path.join(directory, config["output"]["runtime"]["file"]))
         dfs_by_indep_val[x].append(df)
+        totalRuntime += df["total_time"]
+
+    print(totalRuntime)
+
+    basedir = os.path.dirname(os.path.dirname(paths[0]))
+    totalRuntime.to_csv(os.path.join(basedir, "totalRuntime.csv"))
 
     dfs = []
     for indep_val, df_list in dfs_by_indep_val.items():
@@ -125,6 +148,7 @@ def _plot_runtime(config, overrides, args):
 def _plot_metrics(config, overrides, args):
     print("plotting metrics")
     paths = [_get_config_path(config, o) for o in overrides]
+    print(paths);
     try:
         indep_var = config["experiment"]["independent_variable"]
     except KeyError:
@@ -150,6 +174,55 @@ def _plot_metrics(config, overrides, args):
     basedir = os.path.dirname(os.path.dirname(paths[0]))
     os.makedirs(basedir, exist_ok=True)
     metrics.to_csv(os.path.join(basedir, "metrics.csv"))
+
+    genomeNum = config["model"]["genomeNum"];
+
+    # MAKE LEGEND MODULAR
+
+    averageNumGenome = [];
+
+    for x in range(genomeNum):
+        averageNumGenome.append(numberOfVariablesBeforeGenomes+x)
+
+    averageNumGenome.append(-1)
+
+    metrics.iloc[:, averageNumGenome].plot(x="indep_var")
+    plt.title("Average number of living cells by genome")
+    plt.ylabel("Average living cells")
+    plt.xlabel(config["experiment"]["independent_variable"])
+    plt.legend(["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"], loc = "upper left")
+    plt.savefig(os.path.join(basedir, "genome_number_of_cells.png"), dpi=300)
+    plt.close()
+
+    averageEnergyGenome = []
+
+    for x in range(genomeNum):
+        averageEnergyGenome.append(numberOfVariablesBeforeGenomes+maxGenomeNum+x)
+
+    averageEnergyGenome.append(-1)
+
+    metrics.iloc[:, averageEnergyGenome].plot(x="indep_var")
+    plt.title("Average number of cell energy by genome")
+    plt.ylabel("Average cell energy")
+    plt.xlabel(config["experiment"]["independent_variable"])
+    plt.legend(["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"], loc = "upper left")
+    plt.savefig(os.path.join(basedir, "genome_average_energy.png"), dpi=300)
+    plt.close()
+
+    averageChemGenome = []
+
+    for x in range(genomeNum):
+        averageChemGenome.append(numberOfVariablesBeforeGenomes+(maxGenomeNum*2)+x)
+
+    averageChemGenome.append(-1)
+
+    metrics.iloc[:, averageChemGenome].plot(x="indep_var")
+    plt.title("Average number of cell chemicals by genome")
+    plt.ylabel("Average cell chemicals")
+    plt.xlabel(config["experiment"]["independent_variable"])
+    plt.legend(["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"], loc = "upper left")
+    plt.savefig(os.path.join(basedir, "genome_average_chemicals.png"), dpi=300)
+    plt.close()
 
     metrics.iloc[:, [1, -1]].plot(x="indep_var")
     plt.title("Average number of living cells")
@@ -203,7 +276,8 @@ def _get_indep_vals(indep_var, overrides):
     return vals
 
 
-def _plot_individual(path, overrides, config):
+def _plot_individual(path, overrides, config, genomeNum):
+
     directory = os.path.dirname(path)
     stats = pd.read_csv(os.path.join(directory, config["output"]["statistics"]["file"]))
 
@@ -223,6 +297,48 @@ def _plot_individual(path, overrides, config):
     plt.savefig(os.path.join(directory, "EnvironmentStatistics.png"), dpi=300)
     plt.close()
 
+    cellNum = [0]
+    legend = []
+
+    for x in range(genomeNum):
+        cellNum.append(numberOfVariablesBeforeGenomes+x)
+
+    for x in range(genomeNum):
+        legend.append("genome" + str(x))
+
+    stats.iloc[:, cellNum].plot(x="iteration")
+    plt.title("Number of cells by genome")
+    plt.ylabel("Number of cells")
+    plt.xlabel("iterations")
+    plt.legend(legend, loc = "upper left")
+    plt.savefig(os.path.join(directory, "genome_cell_num.png"), dpi=300)
+    plt.close()
+
+    cellEnergy = [0]
+
+    for x in range(genomeNum):
+        cellEnergy.append(numberOfVariablesBeforeGenomes+maxGenomeNum+x)
+
+    stats.iloc[:, cellEnergy].plot(x="iteration")
+    plt.title("Average cell energy by genome")
+    plt.ylabel("Average energy")
+    plt.xlabel("iterations")
+    plt.legend(legend, loc = "upper left")
+    plt.savefig(os.path.join(directory, "genome_average_energy.png"), dpi=300)
+    plt.close()
+
+    cellChem = [0]
+
+    for x in range(genomeNum):
+        cellChem.append(numberOfVariablesBeforeGenomes+maxGenomeNum*2+x)
+
+    stats.iloc[:, cellChem].plot(x="iteration")
+    plt.title("Average cell chemicals by genome")
+    plt.ylabel("Average chemicals")
+    plt.xlabel("iterations")
+    plt.legend(legend, loc = "upper left")
+    plt.savefig(os.path.join(directory, "genome_average_chem.png"), dpi=300)
+    plt.close()
 
 def _get_config_path(config, override):
     directory = config["experiment"]["output_directory"]
@@ -244,6 +360,7 @@ def _write_configuration(config, override):
     _prepend_output_directory(config, "output.video.energy", output_dir)
     _prepend_output_directory(config, "output.video.chemical", output_dir)
     _prepend_output_directory(config, "output.video.toxin", output_dir)
+    _prepend_output_directory(config, "output.video.genome", output_dir)
     _prepend_output_directory(config, "output.statistics.file", output_dir)
     _prepend_output_directory(config, "output.runtime.file", output_dir)
 

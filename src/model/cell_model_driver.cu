@@ -40,7 +40,7 @@ void CellModelDriver::run() {
 	StatisticsOutput statisticsOutput(params);
 	
 	// Iterate:
-	for (int i = 0; i < params.model.iterations; i++) {
+	for (int i = 0; i <= params.model.iterations; i++) {
 		std::cout << "Iteration: " << i << std::endl;
 
 		// Video output:

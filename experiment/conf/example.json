@@ -26,14 +26,18 @@
 		"dToxinDigestionThreshold" : 200,
 		"ndToxinDeathThreshold" : 254,
 
-		"energyUsageRate" : 15,
-		"chemUsageRate" : 1,
 		"chemAcquisitionRate" : 30,
 		"lightEnergyConversionRate" : 10,
 		"co2EnergyConversionRate" : 15,
 		"digestibleToxinGenerationRate" : 1,
 		"digestibleToxinDigestionRate" : 1,
 		"digestibleToxinDigestionCost" : 1,
+
+		"genomeNum" : 5,
+		"startingEnergy" : [100, 200, 300, 400, 500],
+		"startingChem" : [100, 200, 300, 400, 500],
+		"energyUsageRate" : [1, 2, 3, 4, 5],
+		"chemUsageRate" : [1, 2, 3, 4, 5],
 
 		"movementProbability" : 0.1,
 
@@ -63,7 +67,8 @@
 			"interval" : 1,
 			"energy" : "energy.mp4",
 			"chemical" : "chem.mp4",
-			"toxin" : "toxin.mp4"
+			"toxin" : "toxin.mp4",
+			"genome": "genome.mp4"
 		},
 		"statistics" : {
 			"file" : "statistics.csv",
@@ -79,11 +84,12 @@
 		"output_directory" : "experiment/results/final_experiments/runtime_max_cell_size_more_cells",
 		"job_script" : "experiment/job/base_job.sh",
 		"variables" : {
-			"iterations" : {
-				"model.maxCellSize" : [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+			"permutations" : {
+				"model.genomeNum" : [1, 2, 3, 4, 5],
+				"model.randomSeed.cell" : [1005, 1006]
 			}
 		},
-		"independent_variable" : "model.maxCellSize",
+		"independent_variable" : "model.genomeNum",
 		"plots" : {
 			"individual" : true,
 			"runtime" : true,

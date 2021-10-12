@@ -26,7 +26,7 @@ __global__ void add_new_chemicals(GridElement *grid, ModelParameters params,
 	double newChemDensity, bool invertDistribution);
 
 // GridElement initialisation functions:
-__device__ void initialise_cell(Cell &cell, int idx, ModelParameters params);
+__device__ void initialise_cell(Cell &cell, int idx, ModelParameters params, float randNum);
 __device__ void initialise_environment(GridElement &element, int idx, ModelParameters &params);
 __device__ void add_chem_to_element(GridElement &element, ModelParameters &params, double density,
 	int maxAddedChem, bool invertDistribution);
@@ -168,8 +168,12 @@ void initialise_grid(GridElement *grid, ModelParameters params) {
 		element.position.z = idx / (params.w * params.h);
 		element.canGrow = false;
 
-		if (curand_uniform(&grid[idx].randState) < params.initialCellDensity) {
-			initialise_cell(element.cell, idx, params);
+		float randNum = curand_uniform(&grid[idx].randState);
+
+		// Different modes for density (based on genome num or not)
+		// if(randNum < (params.initialCellDensity)*(float(params.genomeNum)/10)) {
+		if(randNum < params.initialCellDensity) {
+			initialise_cell(element.cell, idx, params, randNum);
 		}
 
 		initialise_environment(element, idx, params);
@@ -177,7 +181,8 @@ void initialise_grid(GridElement *grid, ModelParameters params) {
 }
 
 __device__
-void initialise_cell(Cell &cell, int idx, ModelParameters params) {
+void initialise_cell(Cell &cell, int idx, ModelParameters params, float randNum) {
+
 	cell.alive = true;
 	cell.energy = 230;
 	cell.chem = 230;
@@ -187,6 +192,30 @@ void initialise_cell(Cell &cell, int idx, ModelParameters params) {
 	cell.parent_idx = idx;
 	cell.is_subcell = false;
 	cell.has_subcell = false;
+
+	// Keep as float since it needs to be for fraction calculation.
+	float genomeNum = params.genomeNum;
+
+	for(int i = 1; i <= genomeNum; i++) {
+
+		// Different modes for density (based on genome num or not)
+		// if(randNum <= (params.initialCellDensity*((1/genomeNum)*i))/genomeNum) {
+		if(randNum <= params.initialCellDensity*((1/genomeNum)*i)) {
+
+			cell.genome = i;
+			break;
+
+		}
+
+	}
+
+	int genomeIndex = cell.genome - 1;
+
+	cell.energy = params.startingEnergy[genomeIndex];
+	cell.chem = params.startingChem[genomeIndex];
+	cell.energyUsageRate = params.energyUsageRate[genomeIndex];
+	cell.chemUsageRate = params.chemUsageRate[genomeIndex];
+
 }
 
 __device__
@@ -322,13 +351,13 @@ void check_death(GridElement &element, ModelParameters &params) {
 
 __device__
 void use_energy(GridElement &element, int y, ModelParameters &params) {
-	int newEnergy = element.cell.energy - params.energyUsageRate;
+	int newEnergy = element.cell.energy - element.cell.energyUsageRate;
 	element.cell.energy = newEnergy > 0 ? newEnergy : 0;
 }
 
 __device__
 void use_chem(GridElement &element, int y, ModelParameters &params) {
-	int newChem = element.cell.chem - params.chemUsageRate;
+	int newChem = element.cell.chem - element.cell.chemUsageRate;
 	element.cell.chem = newChem > 0 ? newChem : 0;
 }
 

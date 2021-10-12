@@ -2,9 +2,9 @@
 
 #include <curand_kernel.h>
 
-struct Cell {
+struct __align__(16) Cell {
 	enum precision {
-		nbits_alive = 1,
+		nbits_alive = 8,
 		nbits_energy = 8,
 		nbits_chem = 8,
 		nbits_d_toxin = 8,
@@ -13,14 +13,17 @@ struct Cell {
 		nbits_nd_toxin_storage = 8
 	};
 
-	bool alive: 			nbits_alive;
-	unsigned int energy: 	nbits_energy;
-	unsigned int chem: 		nbits_chem;
-	unsigned int dToxin: 	nbits_d_toxin;
-	unsigned int ndToxin: 	nbits_nd_toxin;
+	bool alive;
+	unsigned int energy;
+	unsigned int chem;
+	unsigned int dToxin;
+	unsigned int ndToxin;
+	unsigned int genome;
+	unsigned int energyUsageRate;
+	unsigned int chemUsageRate;
 
-	unsigned int dToxin_storage: 	nbits_d_toxin_storage;
-	unsigned int ndToxin_storage: 	nbits_nd_toxin_storage;
+	unsigned int dToxin_storage;
+	unsigned int ndToxin_storage;
 
 	// Multicell:
 	bool is_subcell = false;
@@ -42,9 +45,9 @@ struct Environment {
 		nbits_nd_toxin = 8
 	};
 
-	unsigned int chem: nbits_chem;
-	unsigned int dToxin: nbits_d_toxin;
-	unsigned int ndToxin: nbits_nd_toxin;
+	unsigned int chem;
+	unsigned int dToxin;
+	unsigned int ndToxin;
 
 	// Environment's internal rng (to be used only when operating on this
 	// environment element)
