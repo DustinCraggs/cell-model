@@ -113,6 +113,7 @@ def _plot_runtime(config, overrides, args):
     totalRuntime = 0
 
     dfs_by_indep_val = defaultdict(list)
+
     for x, p in zip(indep_vals, paths):
         directory = os.path.dirname(p)
         df = pd.read_csv(os.path.join(directory, config["output"]["runtime"]["file"]))
@@ -304,7 +305,7 @@ def _plot_individual(path, overrides, config, genomeNum):
         cellNum.append(numberOfVariablesBeforeGenomes+x)
 
     for x in range(genomeNum):
-        legend.append("genome" + str(x))
+        legend.append("genome" + str(x+1))
 
     stats.iloc[:, cellNum].plot(x="iteration")
     plt.title("Number of cells by genome")
