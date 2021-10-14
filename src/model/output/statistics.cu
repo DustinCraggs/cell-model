@@ -50,8 +50,6 @@ StatisticsOutput::StatisticsOutput(SimulationParameters params) {
 
 void StatisticsOutput::write(CellModel model, int iteration) {
 
-	int genomeNum = 10;	
-
 	double n_living_cells = numberOfLivingCells(model);
 
 	std::string output = 	std::to_string(iteration) + ',' + 
@@ -63,303 +61,57 @@ void StatisticsOutput::write(CellModel model, int iteration) {
 							std::to_string(totalEnvChem(model)) + ',' +
 							std::to_string(totalEnvToxin(model));
 
-	if(genomeNum == 1) {
+	int genome1Cells = genome1NumberOfLivingCells(model);
+	int genome2Cells = genome2NumberOfLivingCells(model);
+	int genome3Cells = genome3NumberOfLivingCells(model);
+	int genome4Cells = genome4NumberOfLivingCells(model);
+	int genome5Cells = genome5NumberOfLivingCells(model);
+	int genome6Cells = genome6NumberOfLivingCells(model);
+	int genome7Cells = genome7NumberOfLivingCells(model);
+	int genome8Cells = genome8NumberOfLivingCells(model);
+	int genome9Cells = genome9NumberOfLivingCells(model);
+	int genome10Cells = genome10NumberOfLivingCells(model);
 
-		int genome1Cells = genome1NumberOfLivingCells(model);
+	output += ',' + std::to_string(genome1Cells);
+	output += ',' + std::to_string(genome2Cells);
+	output += ',' + std::to_string(genome3Cells);
+	output += ',' + std::to_string(genome4Cells);
+	output += ',' + std::to_string(genome5Cells);
+	output += ',' + std::to_string(genome6Cells);
+	output += ',' + std::to_string(genome7Cells);
+	output += ',' + std::to_string(genome8Cells);
+	output += ',' + std::to_string(genome9Cells);
+	output += ',' + std::to_string(genome10Cells);
 
-		output += ',' + std::to_string(genome1Cells);
+	output += ',' + std::to_string(genome1TotalCellEnergy(model)/genome1Cells);
+	output += ',' + std::to_string(genome2TotalCellEnergy(model)/genome2Cells);
+	output += ',' + std::to_string(genome3TotalCellEnergy(model)/genome3Cells);
+	output += ',' + std::to_string(genome4TotalCellEnergy(model)/genome4Cells);
+	output += ',' + std::to_string(genome5TotalCellEnergy(model)/genome5Cells);
+	output += ',' + std::to_string(genome6TotalCellEnergy(model)/genome6Cells);
+	output += ',' + std::to_string(genome7TotalCellEnergy(model)/genome7Cells);
+	output += ',' + std::to_string(genome8TotalCellEnergy(model)/genome8Cells);
+	output += ',' + std::to_string(genome9TotalCellEnergy(model)/genome9Cells);
+	output += ',' + std::to_string(genome10TotalCellEnergy(model)/genome10Cells);
 
-		output += ',' + std::to_string(genome1TotalCellEnergy(model)/genome1Cells);
+	output += ',' + std::to_string(genome1TotalCellChem(model)/genome1Cells);
+	output += ',' + std::to_string(genome2TotalCellChem(model)/genome2Cells);
+	output += ',' + std::to_string(genome3TotalCellChem(model)/genome3Cells);
+	output += ',' + std::to_string(genome4TotalCellChem(model)/genome4Cells);
+	output += ',' + std::to_string(genome5TotalCellChem(model)/genome5Cells);
+	output += ',' + std::to_string(genome6TotalCellChem(model)/genome6Cells);
+	output += ',' + std::to_string(genome7TotalCellChem(model)/genome7Cells);
+	output += ',' + std::to_string(genome8TotalCellChem(model)/genome8Cells);
+	output += ',' + std::to_string(genome9TotalCellChem(model)/genome9Cells);
+	output += ',' + std::to_string(genome10TotalCellChem(model)/genome10Cells);
+	
+	// }
 
-		output += ',' + std::to_string(genome1TotalCellChem(model)/genome1Cells);
+	// else {
 
-	}
-	else if(genomeNum == 2) {
+	// 	return;
 
-		int genome1Cells = genome1NumberOfLivingCells(model);
-		int genome2Cells = genome2NumberOfLivingCells(model);
-
-		output += ',' + std::to_string(genome1Cells);
-		output += ',' + std::to_string(genome2Cells);
-
-		output += ',' + std::to_string(genome1TotalCellEnergy(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellEnergy(model)/genome2Cells);
-
-		output += ',' + std::to_string(genome1TotalCellChem(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellChem(model)/genome2Cells);
-
-	}
-	else if(genomeNum == 3) {
-
-		int genome1Cells = genome1NumberOfLivingCells(model);
-		int genome2Cells = genome2NumberOfLivingCells(model);
-		int genome3Cells = genome3NumberOfLivingCells(model);
-
-		output += ',' + std::to_string(genome1Cells);
-		output += ',' + std::to_string(genome2Cells);
-		output += ',' + std::to_string(genome3Cells);
-
-		output += ',' + std::to_string(genome1TotalCellEnergy(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellEnergy(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellEnergy(model)/genome3Cells);
-
-		output += ',' + std::to_string(genome1TotalCellChem(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellChem(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellChem(model)/genome3Cells);
-		
-	}
-	else if(genomeNum == 4) {
-
-		int genome1Cells = genome1NumberOfLivingCells(model);
-		int genome2Cells = genome2NumberOfLivingCells(model);
-		int genome3Cells = genome3NumberOfLivingCells(model);
-		int genome4Cells = genome3NumberOfLivingCells(model);
-
-		output += ',' + std::to_string(genome1Cells);
-		output += ',' + std::to_string(genome2Cells);
-		output += ',' + std::to_string(genome3Cells);
-		output += ',' + std::to_string(genome4Cells);
-
-		output += ',' + std::to_string(genome1TotalCellEnergy(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellEnergy(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellEnergy(model)/genome3Cells);
-		output += ',' + std::to_string(genome4TotalCellEnergy(model)/genome4Cells);
-
-		output += ',' + std::to_string(genome1TotalCellChem(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellChem(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellChem(model)/genome3Cells);
-		output += ',' + std::to_string(genome4TotalCellChem(model)/genome4Cells);
-		
-	}
-	else if(genomeNum == 5) {
-
-		int genome1Cells = genome1NumberOfLivingCells(model);
-		int genome2Cells = genome2NumberOfLivingCells(model);
-		int genome3Cells = genome3NumberOfLivingCells(model);
-		int genome4Cells = genome4NumberOfLivingCells(model);
-		int genome5Cells = genome5NumberOfLivingCells(model);
-
-		output += ',' + std::to_string(genome1Cells);
-		output += ',' + std::to_string(genome2Cells);
-		output += ',' + std::to_string(genome3Cells);
-		output += ',' + std::to_string(genome4Cells);
-		output += ',' + std::to_string(genome5Cells);
-
-		output += ',' + std::to_string(genome1TotalCellEnergy(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellEnergy(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellEnergy(model)/genome3Cells);
-		output += ',' + std::to_string(genome4TotalCellEnergy(model)/genome4Cells);
-		output += ',' + std::to_string(genome5TotalCellEnergy(model)/genome5Cells);
-
-		output += ',' + std::to_string(genome1TotalCellChem(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellChem(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellChem(model)/genome3Cells);
-		output += ',' + std::to_string(genome4TotalCellChem(model)/genome4Cells);
-		output += ',' + std::to_string(genome5TotalCellChem(model)/genome5Cells);
-		
-	}
-	else if(genomeNum == 6) {
-
-		int genome1Cells = genome1NumberOfLivingCells(model);
-		int genome2Cells = genome2NumberOfLivingCells(model);
-		int genome3Cells = genome3NumberOfLivingCells(model);
-		int genome4Cells = genome4NumberOfLivingCells(model);
-		int genome5Cells = genome5NumberOfLivingCells(model);
-		int genome6Cells = genome6NumberOfLivingCells(model);
-
-		output += ',' + std::to_string(genome1Cells);
-		output += ',' + std::to_string(genome2Cells);
-		output += ',' + std::to_string(genome3Cells);
-		output += ',' + std::to_string(genome4Cells);
-		output += ',' + std::to_string(genome5Cells);
-		output += ',' + std::to_string(genome6Cells);
-
-		output += ',' + std::to_string(genome1TotalCellEnergy(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellEnergy(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellEnergy(model)/genome3Cells);
-		output += ',' + std::to_string(genome4TotalCellEnergy(model)/genome4Cells);
-		output += ',' + std::to_string(genome5TotalCellEnergy(model)/genome5Cells);
-		output += ',' + std::to_string(genome6TotalCellEnergy(model)/genome6Cells);
-
-		output += ',' + std::to_string(genome1TotalCellChem(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellChem(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellChem(model)/genome3Cells);
-		output += ',' + std::to_string(genome4TotalCellChem(model)/genome4Cells);
-		output += ',' + std::to_string(genome5TotalCellChem(model)/genome5Cells);
-		output += ',' + std::to_string(genome6TotalCellChem(model)/genome6Cells);
-		
-	}
-	else if(genomeNum == 7) {
-
-		int genome1Cells = genome1NumberOfLivingCells(model);
-		int genome2Cells = genome2NumberOfLivingCells(model);
-		int genome3Cells = genome3NumberOfLivingCells(model);
-		int genome4Cells = genome4NumberOfLivingCells(model);
-		int genome5Cells = genome5NumberOfLivingCells(model);
-		int genome6Cells = genome6NumberOfLivingCells(model);
-		int genome7Cells = genome7NumberOfLivingCells(model);
-
-		output += ',' + std::to_string(genome1Cells);
-		output += ',' + std::to_string(genome2Cells);
-		output += ',' + std::to_string(genome3Cells);
-		output += ',' + std::to_string(genome4Cells);
-		output += ',' + std::to_string(genome5Cells);
-		output += ',' + std::to_string(genome6Cells);
-		output += ',' + std::to_string(genome7Cells);
-
-		output += ',' + std::to_string(genome1TotalCellEnergy(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellEnergy(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellEnergy(model)/genome3Cells);
-		output += ',' + std::to_string(genome4TotalCellEnergy(model)/genome4Cells);
-		output += ',' + std::to_string(genome5TotalCellEnergy(model)/genome5Cells);
-		output += ',' + std::to_string(genome6TotalCellEnergy(model)/genome6Cells);
-		output += ',' + std::to_string(genome7TotalCellEnergy(model)/genome7Cells);
-
-		output += ',' + std::to_string(genome1TotalCellChem(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellChem(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellChem(model)/genome3Cells);
-		output += ',' + std::to_string(genome4TotalCellChem(model)/genome4Cells);
-		output += ',' + std::to_string(genome5TotalCellChem(model)/genome5Cells);
-		output += ',' + std::to_string(genome6TotalCellChem(model)/genome6Cells);
-		output += ',' + std::to_string(genome7TotalCellChem(model)/genome7Cells);
-
-		
-	}
-	else if(genomeNum == 8) {
-
-		int genome1Cells = genome1NumberOfLivingCells(model);
-		int genome2Cells = genome2NumberOfLivingCells(model);
-		int genome3Cells = genome3NumberOfLivingCells(model);
-		int genome4Cells = genome4NumberOfLivingCells(model);
-		int genome5Cells = genome5NumberOfLivingCells(model);
-		int genome6Cells = genome6NumberOfLivingCells(model);
-		int genome7Cells = genome7NumberOfLivingCells(model);
-		int genome8Cells = genome8NumberOfLivingCells(model);
-
-		output += ',' + std::to_string(genome1Cells);
-		output += ',' + std::to_string(genome2Cells);
-		output += ',' + std::to_string(genome3Cells);
-		output += ',' + std::to_string(genome4Cells);
-		output += ',' + std::to_string(genome5Cells);
-		output += ',' + std::to_string(genome6Cells);
-		output += ',' + std::to_string(genome7Cells);
-		output += ',' + std::to_string(genome8Cells);
-
-		output += ',' + std::to_string(genome1TotalCellEnergy(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellEnergy(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellEnergy(model)/genome3Cells);
-		output += ',' + std::to_string(genome4TotalCellEnergy(model)/genome4Cells);
-		output += ',' + std::to_string(genome5TotalCellEnergy(model)/genome5Cells);
-		output += ',' + std::to_string(genome6TotalCellEnergy(model)/genome6Cells);
-		output += ',' + std::to_string(genome7TotalCellEnergy(model)/genome7Cells);
-		output += ',' + std::to_string(genome8TotalCellEnergy(model)/genome8Cells);
-
-		output += ',' + std::to_string(genome1TotalCellChem(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellChem(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellChem(model)/genome3Cells);
-		output += ',' + std::to_string(genome4TotalCellChem(model)/genome4Cells);
-		output += ',' + std::to_string(genome5TotalCellChem(model)/genome5Cells);
-		output += ',' + std::to_string(genome6TotalCellChem(model)/genome6Cells);
-		output += ',' + std::to_string(genome7TotalCellChem(model)/genome7Cells);
-		output += ',' + std::to_string(genome8TotalCellChem(model)/genome8Cells);
-		
-	}
-	else if(genomeNum == 9) {
-
-		int genome1Cells = genome1NumberOfLivingCells(model);
-		int genome2Cells = genome2NumberOfLivingCells(model);
-		int genome3Cells = genome3NumberOfLivingCells(model);
-		int genome4Cells = genome4NumberOfLivingCells(model);
-		int genome5Cells = genome5NumberOfLivingCells(model);
-		int genome6Cells = genome6NumberOfLivingCells(model);
-		int genome7Cells = genome7NumberOfLivingCells(model);
-		int genome8Cells = genome8NumberOfLivingCells(model);
-		int genome9Cells = genome9NumberOfLivingCells(model);
-
-		output += ',' + std::to_string(genome1Cells);
-		output += ',' + std::to_string(genome2Cells);
-		output += ',' + std::to_string(genome3Cells);
-		output += ',' + std::to_string(genome4Cells);
-		output += ',' + std::to_string(genome5Cells);
-		output += ',' + std::to_string(genome6Cells);
-		output += ',' + std::to_string(genome7Cells);
-		output += ',' + std::to_string(genome8Cells);
-		output += ',' + std::to_string(genome9Cells);
-
-		output += ',' + std::to_string(genome1TotalCellEnergy(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellEnergy(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellEnergy(model)/genome3Cells);
-		output += ',' + std::to_string(genome4TotalCellEnergy(model)/genome4Cells);
-		output += ',' + std::to_string(genome5TotalCellEnergy(model)/genome5Cells);
-		output += ',' + std::to_string(genome6TotalCellEnergy(model)/genome6Cells);
-		output += ',' + std::to_string(genome7TotalCellEnergy(model)/genome7Cells);
-		output += ',' + std::to_string(genome8TotalCellEnergy(model)/genome8Cells);
-		output += ',' + std::to_string(genome9TotalCellEnergy(model)/genome9Cells);
-
-		output += ',' + std::to_string(genome1TotalCellChem(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellChem(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellChem(model)/genome3Cells);
-		output += ',' + std::to_string(genome4TotalCellChem(model)/genome4Cells);
-		output += ',' + std::to_string(genome5TotalCellChem(model)/genome5Cells);
-		output += ',' + std::to_string(genome6TotalCellChem(model)/genome6Cells);
-		output += ',' + std::to_string(genome7TotalCellChem(model)/genome7Cells);
-		output += ',' + std::to_string(genome8TotalCellChem(model)/genome8Cells);
-		output += ',' + std::to_string(genome9TotalCellChem(model)/genome9Cells);
-		
-	}
-	else if(genomeNum == 10) {
-
-		int genome1Cells = genome1NumberOfLivingCells(model);
-		int genome2Cells = genome2NumberOfLivingCells(model);
-		int genome3Cells = genome3NumberOfLivingCells(model);
-		int genome4Cells = genome4NumberOfLivingCells(model);
-		int genome5Cells = genome5NumberOfLivingCells(model);
-		int genome6Cells = genome6NumberOfLivingCells(model);
-		int genome7Cells = genome7NumberOfLivingCells(model);
-		int genome8Cells = genome8NumberOfLivingCells(model);
-		int genome9Cells = genome9NumberOfLivingCells(model);
-		int genome10Cells = genome10NumberOfLivingCells(model);
-
-		output += ',' + std::to_string(genome1Cells);
-		output += ',' + std::to_string(genome2Cells);
-		output += ',' + std::to_string(genome3Cells);
-		output += ',' + std::to_string(genome4Cells);
-		output += ',' + std::to_string(genome5Cells);
-		output += ',' + std::to_string(genome6Cells);
-		output += ',' + std::to_string(genome7Cells);
-		output += ',' + std::to_string(genome8Cells);
-		output += ',' + std::to_string(genome9Cells);
-		output += ',' + std::to_string(genome10Cells);
-
-		output += ',' + std::to_string(genome1TotalCellEnergy(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellEnergy(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellEnergy(model)/genome3Cells);
-		output += ',' + std::to_string(genome4TotalCellEnergy(model)/genome4Cells);
-		output += ',' + std::to_string(genome5TotalCellEnergy(model)/genome5Cells);
-		output += ',' + std::to_string(genome6TotalCellEnergy(model)/genome6Cells);
-		output += ',' + std::to_string(genome7TotalCellEnergy(model)/genome7Cells);
-		output += ',' + std::to_string(genome8TotalCellEnergy(model)/genome8Cells);
-		output += ',' + std::to_string(genome9TotalCellEnergy(model)/genome9Cells);
-		output += ',' + std::to_string(genome10TotalCellEnergy(model)/genome10Cells);
-
-		output += ',' + std::to_string(genome1TotalCellChem(model)/genome1Cells);
-		output += ',' + std::to_string(genome2TotalCellChem(model)/genome2Cells);
-		output += ',' + std::to_string(genome3TotalCellChem(model)/genome3Cells);
-		output += ',' + std::to_string(genome4TotalCellChem(model)/genome4Cells);
-		output += ',' + std::to_string(genome5TotalCellChem(model)/genome5Cells);
-		output += ',' + std::to_string(genome6TotalCellChem(model)/genome6Cells);
-		output += ',' + std::to_string(genome7TotalCellChem(model)/genome7Cells);
-		output += ',' + std::to_string(genome8TotalCellChem(model)/genome8Cells);
-		output += ',' + std::to_string(genome9TotalCellChem(model)/genome9Cells);
-		output += ',' + std::to_string(genome10TotalCellChem(model)/genome10Cells);
-		
-	}
-
-	else {
-
-		return;
-
-	}
+	// }
 
 	outputStream << output << std::endl;
 
