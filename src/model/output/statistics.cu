@@ -17,6 +17,7 @@ StatisticsOutput::StatisticsOutput(SimulationParameters params) {
 	std::string output = "iteration, number_of_cells, average_cell_size, average_cell_energy, average_cell_chem, average_cell_toxin, total_environment_chem, total_environment_toxin";
 
 	int genomeNum = 10;
+
 	std::string genomeString;
 
 	for(int i = 1; i <= genomeNum; i++) {
@@ -40,6 +41,14 @@ StatisticsOutput::StatisticsOutput(SimulationParameters params) {
 		output += ", genome";
 		output += std::to_string(i);
 		output += "AverageCellChem";
+
+	}
+
+	for(int i = 1; i <= genomeNum; i++) {
+
+		output += ", genome";
+		output += std::to_string(i);
+		output += "AverageCellToxin";
 
 	}
 
@@ -104,6 +113,17 @@ void StatisticsOutput::write(CellModel model, int iteration) {
 	output += ',' + std::to_string(genome8TotalCellChem(model)/genome8Cells);
 	output += ',' + std::to_string(genome9TotalCellChem(model)/genome9Cells);
 	output += ',' + std::to_string(genome10TotalCellChem(model)/genome10Cells);
+
+	output += ',' + std::to_string(genome1TotalCellToxin(model)/genome1Cells);
+	output += ',' + std::to_string(genome2TotalCellToxin(model)/genome2Cells);
+	output += ',' + std::to_string(genome3TotalCellToxin(model)/genome3Cells);
+	output += ',' + std::to_string(genome4TotalCellToxin(model)/genome4Cells);
+	output += ',' + std::to_string(genome5TotalCellToxin(model)/genome5Cells);
+	output += ',' + std::to_string(genome6TotalCellToxin(model)/genome6Cells);
+	output += ',' + std::to_string(genome7TotalCellToxin(model)/genome7Cells);
+	output += ',' + std::to_string(genome8TotalCellToxin(model)/genome8Cells);
+	output += ',' + std::to_string(genome9TotalCellToxin(model)/genome9Cells);
+	output += ',' + std::to_string(genome10TotalCellToxin(model)/genome10Cells);
 	
 	// }
 
@@ -424,6 +444,109 @@ struct CellChemGenome10 {
 	int operator()(const GridElement& g) const {
 		if(g.cell.alive && g.cell.genome == 10) {
 			return g.cell.chem;
+		}
+		return 0.0;
+	}
+};
+
+struct CellToxinGenome1 {
+	__device__
+	double operator()(const GridElement& g) const {
+		if(g.cell.alive && g.cell.genome == 1) {
+			return g.cell.dToxin + g.cell.ndToxin;
+		}
+		return 0.0;
+	}
+};
+
+struct CellToxinGenome2 {
+	__device__
+	double operator()(const GridElement& g) const {
+		if(g.cell.alive && g.cell.genome == 2) {
+			return g.cell.dToxin + g.cell.ndToxin;
+		}
+		return 0.0;
+	}
+};
+
+struct CellToxinGenome3 {
+	__device__
+	double operator()(const GridElement& g) const {
+		if(g.cell.alive && g.cell.genome == 3) {
+			return g.cell.dToxin + g.cell.ndToxin;
+		}
+		return 0.0;
+	}
+};
+
+
+struct CellToxinGenome4 {
+	__device__
+	double operator()(const GridElement& g) const {
+		if(g.cell.alive && g.cell.genome == 4) {
+			return g.cell.dToxin + g.cell.ndToxin;
+		}
+		return 0.0;
+	}
+};
+
+
+struct CellToxinGenome5 {
+	__device__
+	double operator()(const GridElement& g) const {
+		if(g.cell.alive && g.cell.genome == 5) {
+			return g.cell.dToxin + g.cell.ndToxin;
+		}
+		return 0.0;
+	}
+};
+
+
+struct CellToxinGenome6 {
+	__device__
+	double operator()(const GridElement& g) const {
+		if(g.cell.alive && g.cell.genome == 6) {
+			return g.cell.dToxin + g.cell.ndToxin;
+		}
+		return 0.0;
+	}
+};
+
+struct CellToxinGenome7 {
+	__device__
+	double operator()(const GridElement& g) const {
+		if(g.cell.alive && g.cell.genome == 7) {
+			return g.cell.dToxin + g.cell.ndToxin;
+		}
+		return 0.0;
+	}
+};
+
+struct CellToxinGenome8 {
+	__device__
+	double operator()(const GridElement& g) const {
+		if(g.cell.alive && g.cell.genome == 8) {
+			return g.cell.dToxin + g.cell.ndToxin;
+		}
+		return 0.0;
+	}
+};
+
+struct CellToxinGenome9 {
+	__device__
+	double operator()(const GridElement& g) const {
+		if(g.cell.alive && g.cell.genome == 9) {
+			return g.cell.dToxin + g.cell.ndToxin;
+		}
+		return 0.0;
+	}
+};
+
+struct CellToxinGenome10 {
+	__device__
+	double operator()(const GridElement& g) const {
+		if(g.cell.alive && g.cell.genome == 10) {
+			return g.cell.dToxin + g.cell.ndToxin;
 		}
 		return 0.0;
 	}
@@ -890,6 +1013,116 @@ double StatisticsOutput::genome10TotalCellChem(CellModel model) {
 		gridPtr,
 		gridPtr + model.getParams().gridSize(),
 		CellChemGenome10(),
+		0.0,
+		thrust::plus<double>()
+	);
+}
+
+double StatisticsOutput::genome1TotalCellToxin(CellModel model) {
+	thrust::device_ptr<GridElement> gridPtr = thrust::device_pointer_cast(model.getDeviceGrid());
+	return thrust::transform_reduce(
+		gridPtr,
+		gridPtr + model.getParams().gridSize(),
+		CellToxinGenome1(),
+		0.0,
+		thrust::plus<double>()
+	);
+}
+
+double StatisticsOutput::genome2TotalCellToxin(CellModel model) {
+	thrust::device_ptr<GridElement> gridPtr = thrust::device_pointer_cast(model.getDeviceGrid());
+	return thrust::transform_reduce(
+		gridPtr,
+		gridPtr + model.getParams().gridSize(),
+		CellToxinGenome2(),
+		0.0,
+		thrust::plus<double>()
+	);
+}
+
+double StatisticsOutput::genome3TotalCellToxin(CellModel model) {
+	thrust::device_ptr<GridElement> gridPtr = thrust::device_pointer_cast(model.getDeviceGrid());
+	return thrust::transform_reduce(
+		gridPtr,
+		gridPtr + model.getParams().gridSize(),
+		CellToxinGenome3(),
+		0.0,
+		thrust::plus<double>()
+	);
+}
+
+double StatisticsOutput::genome4TotalCellToxin(CellModel model) {
+	thrust::device_ptr<GridElement> gridPtr = thrust::device_pointer_cast(model.getDeviceGrid());
+	return thrust::transform_reduce(
+		gridPtr,
+		gridPtr + model.getParams().gridSize(),
+		CellToxinGenome4(),
+		0.0,
+		thrust::plus<double>()
+	);
+}
+
+double StatisticsOutput::genome5TotalCellToxin(CellModel model) {
+	thrust::device_ptr<GridElement> gridPtr = thrust::device_pointer_cast(model.getDeviceGrid());
+	return thrust::transform_reduce(
+		gridPtr,
+		gridPtr + model.getParams().gridSize(),
+		CellToxinGenome5(),
+		0.0,
+		thrust::plus<double>()
+	);
+}
+
+double StatisticsOutput::genome6TotalCellToxin(CellModel model) {
+	thrust::device_ptr<GridElement> gridPtr = thrust::device_pointer_cast(model.getDeviceGrid());
+	return thrust::transform_reduce(
+		gridPtr,
+		gridPtr + model.getParams().gridSize(),
+		CellToxinGenome6(),
+		0.0,
+		thrust::plus<double>()
+	);
+}
+
+double StatisticsOutput::genome7TotalCellToxin(CellModel model) {
+	thrust::device_ptr<GridElement> gridPtr = thrust::device_pointer_cast(model.getDeviceGrid());
+	return thrust::transform_reduce(
+		gridPtr,
+		gridPtr + model.getParams().gridSize(),
+		CellToxinGenome7(),
+		0.0,
+		thrust::plus<double>()
+	);
+}
+
+double StatisticsOutput::genome8TotalCellToxin(CellModel model) {
+	thrust::device_ptr<GridElement> gridPtr = thrust::device_pointer_cast(model.getDeviceGrid());
+	return thrust::transform_reduce(
+		gridPtr,
+		gridPtr + model.getParams().gridSize(),
+		CellToxinGenome8(),
+		0.0,
+		thrust::plus<double>()
+	);
+}
+
+double StatisticsOutput::genome9TotalCellToxin(CellModel model) {
+	thrust::device_ptr<GridElement> gridPtr = thrust::device_pointer_cast(model.getDeviceGrid());
+	return thrust::transform_reduce(
+		gridPtr,
+		gridPtr + model.getParams().gridSize(),
+		CellToxinGenome9(),
+		0.0,
+		thrust::plus<double>()
+	);
+}
+
+double StatisticsOutput::genome10TotalCellToxin(CellModel model) {
+	thrust::device_ptr<GridElement> gridPtr = thrust::device_pointer_cast(model.getDeviceGrid());
+	return thrust::transform_reduce(
+		gridPtr,
+		gridPtr + model.getParams().gridSize(),
+		CellToxinGenome10(),
 		0.0,
 		thrust::plus<double>()
 	);

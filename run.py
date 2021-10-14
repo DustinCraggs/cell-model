@@ -225,6 +225,21 @@ def _plot_metrics(config, overrides, args):
     plt.savefig(os.path.join(basedir, "genome_average_chemicals.png"), dpi=300)
     plt.close()
 
+    averageToxinGenome = []
+
+    for x in range(genomeNum):
+        averageToxinGenome.append(numberOfVariablesBeforeGenomes+(maxGenomeNum*3)+x)
+
+    averageToxinGenome.append(-1)
+
+    metrics.iloc[:, averageToxinGenome].plot(x="indep_var")
+    plt.title("Average number of cell toxins by genome")
+    plt.ylabel("Average cell toxins")
+    plt.xlabel(config["experiment"]["independent_variable"])
+    plt.legend(["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"], loc = "upper left")
+    plt.savefig(os.path.join(basedir, "genome_average_toxins.png"), dpi=300)
+    plt.close()
+
     metrics.iloc[:, [1, -1]].plot(x="indep_var")
     plt.title("Average number of living cells")
     plt.ylabel("Average number of living cells")
@@ -322,7 +337,7 @@ def _plot_individual(path, overrides, config, genomeNum):
 
     stats.iloc[:, cellEnergy].plot(x="iteration")
     plt.title("Average cell energy by genome")
-    plt.ylabel("Average energy")
+    plt.ylabel("Average cell energy")
     plt.xlabel("iterations")
     plt.legend(legend, loc = "upper left")
     plt.savefig(os.path.join(directory, "genome_average_energy.png"), dpi=300)
@@ -335,10 +350,23 @@ def _plot_individual(path, overrides, config, genomeNum):
 
     stats.iloc[:, cellChem].plot(x="iteration")
     plt.title("Average cell chemicals by genome")
-    plt.ylabel("Average chemicals")
+    plt.ylabel("Average cell chemicals")
     plt.xlabel("iterations")
     plt.legend(legend, loc = "upper left")
     plt.savefig(os.path.join(directory, "genome_average_chem.png"), dpi=300)
+    plt.close()
+
+    cellToxin = [0]
+
+    for x in range(genomeNum):
+        cellToxin.append(numberOfVariablesBeforeGenomes+maxGenomeNum*3+x)
+
+    stats.iloc[:, cellChem].plot(x="iteration")
+    plt.title("Average cell toxins by genome")
+    plt.ylabel("Average cell toxins")
+    plt.xlabel("iterations")
+    plt.legend(legend, loc = "upper left")
+    plt.savefig(os.path.join(directory, "genome_average_toxin.png"), dpi=300)
     plt.close()
 
 def _get_config_path(config, override):
