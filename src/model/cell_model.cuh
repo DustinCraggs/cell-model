@@ -24,6 +24,13 @@ public:
 	std::chrono::duration<double> durationGrowthInteractions;
 	std::chrono::duration<double> durationEnvironment;
 
+	double totalCellsDuration = 0;
+	double totalBigCellsDuration = 0;	
+	double totalInteractionsDuration = 0;
+	double totalPrepareGrowthDuration = 0;
+	double totalGrowthInteractionsDuration = 0;
+	double totalEnvironmentDuration = 0;
+
 private:
 	void initialise();
 	void iterateRandomMovement();

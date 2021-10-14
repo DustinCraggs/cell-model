@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <chrono>
+#include <vector>
 
 #include "cell_model_driver.h"
 #include "cell_model.cuh"
@@ -20,11 +21,19 @@ CellModelDriver::CellModelDriver(std::string paramsPath) {
 }
 
 void CellModelDriver::writeRuntime(std::chrono::time_point<std::chrono::steady_clock> t0,
-		SimulationParameters &params) {
+		SimulationParameters &params, std::vector<double> runtimeVector) {
 	int total_time = TIME_DIFF(t0, CURRENT_TIME);
 	auto outputStream = std::ofstream(params.output.runtime.file);
-	outputStream << "total_time" << std::endl;
-	outputStream << total_time << std::endl;
+	outputStream << "total_time, cell_runtime, big_cell_runtime, iteractions_runtime, prepare_growth_runtime, growth_interactions_runtime, environment_runtime, total_function_runtime" << std::endl;
+	// outputStream << total_time << "," << model.totalCellsDuration << "," << model.totalBigCellsDuration << "," << model.totalInteractionsDuration << "," << model.totalPrepareGrowthDuration << "," << model.totalGrowthInteractionsDuration << "," << model.totalEnvironmentDuration << std::endl;
+	std::string outputValues;
+
+	// for(int i = 0; i < runtimeVector.size(); i++) {
+
+	// 	outputValues += 
+
+	// }
+
 	outputStream.close();
 }
 
@@ -39,13 +48,6 @@ void CellModelDriver::run() {
 	// Create output modules:
 	VideoOutput videoOutput(params);
 	StatisticsOutput statisticsOutput(params);
-
-	double totalCellsDuration = 0;
-	double totalBigCellsDuration = 0;	
-	double totalInteractionsDuration = 0;
-	double totalPrepareGrowthDuration = 0;
-	double totalGrowthInteractionsDuration = 0;
-	double totalEnvironmentDuration = 0;
 	
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -67,12 +69,12 @@ void CellModelDriver::run() {
 		performInterventions(params, model, i);
 		model.simulate(1);
 
-		totalCellsDuration += model.durationCells.count();
-		totalBigCellsDuration += model.durationBigCells.count();	
-		totalInteractionsDuration += model.durationInteractions.count();
-		totalPrepareGrowthDuration += model.durationPrepareGrowth.count();
-		totalGrowthInteractionsDuration += model.durationGrowthInteractions.count();
-		totalEnvironmentDuration += model.durationEnvironment.count();
+		model.totalCellsDuration += model.durationCells.count();
+		model.totalBigCellsDuration += model.durationBigCells.count();	
+		model.totalInteractionsDuration += model.durationInteractions.count();
+		model.totalPrepareGrowthDuration += model.durationPrepareGrowth.count();
+		model.totalGrowthInteractionsDuration += model.durationGrowthInteractions.count();
+		model.totalEnvironmentDuration += model.durationEnvironment.count();
 
 	}
 
@@ -81,19 +83,28 @@ void CellModelDriver::run() {
 
 	std::cout << "Total runtime: " << duration.count() << std::endl;
 
-	std::cout << "Runtime of cell function: " << totalCellsDuration << std::endl;
-	std::cout << "Runtime of big cell function: " << totalBigCellsDuration << std::endl;
-	std::cout << "Runtime of interactions function: " << totalInteractionsDuration << std::endl;
-	std::cout << "Runtime of prepare growth function: " << totalPrepareGrowthDuration << std::endl;
-	std::cout << "Runtime of growth interactions function: " << totalGrowthInteractionsDuration << std::endl;
-	std::cout << "Runtime of environment function: " << totalEnvironmentDuration << std::endl;
+	std::cout << "Runtime of cell function: " << model.totalCellsDuration << std::endl;
+	std::cout << "Runtime of big cell function: " << model.totalBigCellsDuration << std::endl;
+	std::cout << "Runtime of interactions function: " << model.totalInteractionsDuration << std::endl;
+	std::cout << "Runtime of prepare growth function: " << model.totalPrepareGrowthDuration << std::endl;
+	std::cout << "Runtime of growth interactions function: " << model.totalGrowthInteractionsDuration << std::endl;
+	std::cout << "Runtime of environment function: " << model.totalEnvironmentDuration << std::endl;
 
-	std::cout << "Total function runtimes: " << totalCellsDuration + totalBigCellsDuration + totalInteractionsDuration + totalPrepareGrowthDuration + totalGrowthInteractionsDuration + totalEnvironmentDuration << std::endl;
+	std::cout << "Total function runtimes: " << model.totalCellsDuration + model.totalBigCellsDuration + model.totalInteractionsDuration + model.totalPrepareGrowthDuration + model.totalGrowthInteractionsDuration + model.totalEnvironmentDuration << std::endl;
 
 	videoOutput.close();
 	statisticsOutput.close();
 
-	writeRuntime(t0, params);
+	std::vector<double> runtimeVector;
+
+	runtimeVector.push_back(model.totalCellsDuration);
+	runtimeVector.push_back(model.totalBigCellsDuration);
+	runtimeVector.push_back(model.totalInteractionsDuration);
+	runtimeVector.push_back(model.totalPrepareGrowthDuration);
+	runtimeVector.push_back(model.totalGrowthInteractionsDuration);
+	runtimeVector.push_back(model.totalEnvironmentDuration);
+
+	writeRuntime(t0, params, runtimeVector);
 
 	std::cout << "COMPLETE" << std::endl;
 }
