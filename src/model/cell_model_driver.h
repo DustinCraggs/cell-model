@@ -11,6 +11,5 @@ public:
 	void run();
 private:
 	SimulationParameters params;
-	void writeRuntime(std::chrono::time_point<std::chrono::steady_clock> t0,
-		SimulationParameters &params, std::vector<double> runtimeVector);
+	void writeRuntime(SimulationParameters &params, std::vector<int> runtimeVector);
 };

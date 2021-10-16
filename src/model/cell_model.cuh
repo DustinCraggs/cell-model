@@ -17,19 +17,19 @@ public:
 	void updateParams(SimulationParameters params);
 	void redistributeChemicals(double newChemDensity, bool invertDistribution);
 
-	std::chrono::duration<double> durationCells;
-	std::chrono::duration<double> durationBigCells;
-	std::chrono::duration<double> durationInteractions;
-	std::chrono::duration<double> durationPrepareGrowth;
-	std::chrono::duration<double> durationGrowthInteractions;
-	std::chrono::duration<double> durationEnvironment;
+	int runtimeCells;
+	int runtimeBigCells;
+	int runtimeInteractions;
+	int runtimePrepareGrowth;
+	int runtimeGrowthInteractions;
+	int runtimeEnvironment;
 
-	double totalCellsDuration = 0;
-	double totalBigCellsDuration = 0;	
-	double totalInteractionsDuration = 0;
-	double totalPrepareGrowthDuration = 0;
-	double totalGrowthInteractionsDuration = 0;
-	double totalEnvironmentDuration = 0;
+	int totalCellsRuntime = 0;
+	int totalBigCellsRuntime = 0;	
+	int totalInteractionsRuntime = 0;
+	int totalPrepareGrowthRuntime = 0;
+	int totalGrowthInteractionsRuntime = 0;
+	int totalEnvironmentRuntime = 0;
 
 private:
 	void initialise();
