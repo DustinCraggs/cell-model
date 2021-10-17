@@ -60,23 +60,37 @@ void CellModelDriver::run() {
 
 	start = std::chrono::high_resolution_clock::now();
 
+	int modelRuntime = 0;
+	int videoOutputRuntime = 0;
+	int statisticsOutputRuntime = 0;
+
 	// Iterate:
 	for (int i = 0; i <= params.model.iterations; i++) {
 
 		std::cout << "Iteration: " << i << std::endl;
 
 		// Video output:
-		if ((i % output.video.interval) == 0) {
+		if (((i % output.video.interval) == 0) && (output.video.enabled == true)) {
+			auto start = std::chrono::high_resolution_clock::now();
 			videoOutput.write(model, i);
+			auto stop = std::chrono::high_resolution_clock::now();
+			videoOutputRuntime += std::chrono::duration_cast<std::chrono::microseconds>(stop-start).count();
 		}
 
 		// Statistics output:
-		if ((i % output.statistics.interval) == 0) {
+		if (((i % output.statistics.interval) == 0) && (output.statistics.enabled == true)) {
+			auto start = std::chrono::high_resolution_clock::now();
 			statisticsOutput.write(model, i);
+			auto stop = std::chrono::high_resolution_clock::now();
+			statisticsOutputRuntime += std::chrono::duration_cast<std::chrono::microseconds>(stop-start).count();
 		}
 
 		performInterventions(params, model, i);
+
+		auto start = std::chrono::high_resolution_clock::now();
 		model.simulate(1);
+		auto stop = std::chrono::high_resolution_clock::now();
+		modelRuntime += std::chrono::duration_cast<std::chrono::microseconds>(stop-start).count();
 
 		model.totalCellsRuntime += model.runtimeCells;
 		model.totalBigCellsRuntime += model.runtimeBigCells;	
@@ -103,6 +117,9 @@ void CellModelDriver::run() {
 
 	std::cout << "Initialisation runtime: " << setupRuntime << std::endl;
 	std::cout << "Simulation runtime: " << simulationRuntime << std::endl;
+	std::cout << "Model runtime: " << modelRuntime << std::endl;
+	std::cout << "Video output runtime: " << videoOutputRuntime << std::endl;
+	std::cout << "Statistics output runtime: " << statisticsOutputRuntime << std::endl;
 	std::cout << "Finalisation runtime: " << finalisationRuntime << std::endl;
 	std::cout << "Total runtime: " << setupRuntime + simulationRuntime + finalisationRuntime << std::endl;
 
@@ -117,7 +134,7 @@ void CellModelDriver::run() {
 
 	std::cout << std::endl;
 
-	std::cout << "Runtime total of functions: " << model.totalCellsRuntime + model.totalBigCellsRuntime + model.totalInteractionsRuntime + model.totalPrepareGrowthRuntime + model.totalGrowthInteractionsRuntime + model.totalEnvironmentRuntime << std::endl;
+	std::cout << "Runtime of all functions: " << modelRuntime << std::endl;
 
 	std::vector<int> runtimeVector;
 

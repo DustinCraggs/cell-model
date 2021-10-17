@@ -125,14 +125,6 @@ void StatisticsOutput::write(CellModel model, int iteration) {
 	output += ',' + std::to_string(genome9TotalCellToxin(model)/genome9Cells);
 	output += ',' + std::to_string(genome10TotalCellToxin(model)/genome10Cells);
 	
-	// }
-
-	// else {
-
-	// 	return;
-
-	// }
-
 	outputStream << output << std::endl;
 
 }
