@@ -72,6 +72,7 @@
 			"genome": "genome.mp4"
 		},
 		"statistics" : {
+			"enabled" : true,
 			"file" : "statistics.csv",
 			"console" : true,
 			"interval" : 50

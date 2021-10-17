@@ -26,6 +26,7 @@ struct OutputParameters {
 	} video;
 
 	struct Statistics {
+		bool enabled;
 		int interval;
 		bool console;
 		string file;
