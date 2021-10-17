@@ -24,13 +24,6 @@ public:
 	int runtimeGrowthInteractions;
 	int runtimeEnvironment;
 
-	int totalCellsRuntime = 0;
-	int totalBigCellsRuntime = 0;	
-	int totalInteractionsRuntime = 0;
-	int totalPrepareGrowthRuntime = 0;
-	int totalGrowthInteractionsRuntime = 0;
-	int totalEnvironmentRuntime = 0;
-
 private:
 	void initialise();
 	void iterateRandomMovement();
