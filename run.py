@@ -81,22 +81,23 @@ def vis(args):
     length = len(overrides)
     seeds = length/genomeNum
 
-    if "individual" in plots and plots["individual"] == True:
-        for o in overrides:
-            print("Plotting individual: {}".format(o))
-            path = _get_config_path(config, o)
-            _plot_individual(path, overrides, config, currentGenomeNum)
-            if count%seeds == 0:
-                currentGenomeNum+=1
-            count+=1
+    if config["output"]["statistics"]["enabled"] == True:
+        if "individual" in plots and plots["individual"] == True:
+            for o in overrides:
+                print("Plotting individual: {}".format(o))
+                path = _get_config_path(config, o)
+                _plot_individual(path, overrides, config, currentGenomeNum)
+                if count%seeds == 0:
+                    currentGenomeNum+=1
+                count+=1
+
+        print("Plotting metrics")
+        if "metrics" in plots and plots["metrics"] == True:
+            _plot_metrics(config, overrides, args)
+
     print("Plotting runtime")
     if "runtime" in plots and plots["runtime"] == True:
         _plot_runtime(config, overrides, args)
-
-    print("Plotting metrics")
-    if "metrics" in plots and plots["metrics"] == True:
-        _plot_metrics(config, overrides, args)
-
 
 def combine(args):
     pass
@@ -118,12 +119,6 @@ def _plot_runtime(config, overrides, args):
         directory = os.path.dirname(p)
         df = pd.read_csv(os.path.join(directory, config["output"]["runtime"]["file"]))
         dfs_by_indep_val[x].append(df)
-        totalRuntime += df["total_time"]
-
-    print(totalRuntime)
-
-    basedir = os.path.dirname(os.path.dirname(paths[0]))
-    totalRuntime.to_csv(os.path.join(basedir, "totalRuntime.csv"))
 
     dfs = []
     for indep_val, df_list in dfs_by_indep_val.items():
@@ -133,18 +128,14 @@ def _plot_runtime(config, overrides, args):
 
     times = pd.concat(dfs, axis=0)
 
-    print(times)
-    print(indep_vals)
-
-    times["total_time"] = times["total_time"] / 1000
-    times.plot(x="indep_var")
     basedir = os.path.dirname(os.path.dirname(paths[0]))
-    plt.title("Simulation run time (1000 iterations)")
-    plt.ylabel("Run time (s)")
-    plt.xlabel(config["experiment"]["independent_variable"])
-    plt.savefig(os.path.join(basedir, "runtime.png"), dpi=300)
-    plt.close()
+    times.to_csv(os.path.join(basedir, "runtimeStats.csv"))
 
+    times.plot(x="indep_var", xlabel=indep_var, figsize=(10, 6), ylabel = "Run time (μs)", kind="bar", stacked = True, title = "Simulation run time")
+    basedir = os.path.dirname(os.path.dirname(paths[0]))
+    plt.legend(bbox_to_anchor=(1, 0.75))
+    plt.savefig(os.path.join(basedir, "runtime.png"), dpi=300, bbox_inches='tight')
+    plt.close()
 
 def _plot_metrics(config, overrides, args):
     print("plotting metrics")
@@ -329,6 +320,11 @@ def _plot_individual(path, overrides, config, genomeNum):
     plt.legend(legend, loc = "upper left")
     plt.savefig(os.path.join(directory, "genome_cell_num.png"), dpi=300)
     plt.close()
+
+    # times.plot(x="iteration", xlabel="iterations", figsize=(10, 6), ylabel = "Number of cells", kind="bar", stacked = True, title = "Number of cells by genome")
+    # plt.legend(legend,bbox_to_anchor=(1, 0.75))
+    # plt.savefig(os.path.join(directory, "genome_cell_num.png"), dpi=300, bbox_inches='tight')
+    # plt.close()
 
     cellEnergy = [0]
 
