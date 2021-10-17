@@ -87,6 +87,7 @@ void cudaParametersFromJson(CudaParameters &cuda, json jsonParams) {
 void outputParametersFromJson(OutputParameters &output, json jsonParams) {
 	if (jsonParams.contains("video")) {
 		json videoJsonParams = jsonParams["video"];
+		output.video.enabled = videoJsonParams.value("enabled", false);
 		output.video.interval = videoJsonParams.value("interval", 1);
 		output.video.energyPath = videoJsonParams.value("energy", "");
 		output.video.chemPath = videoJsonParams.value("chemical", "");

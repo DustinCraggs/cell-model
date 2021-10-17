@@ -2,8 +2,8 @@
 	"model" : {
 		"width" : 100,
 		"height" : 100,
-		"depth" : 10,
-		"iterations" : 2000,
+		"depth" : 100,
+		"iterations" : 1000,
 
 		"lightIntensity" : 1,
 		"temperature" : 20,
@@ -64,6 +64,7 @@
 
 	"output" : {
 		"video" : {
+			"enabled" : false,
 			"interval" : 1,
 			"energy" : "energy.mp4",
 			"chemical" : "chem.mp4",
@@ -85,8 +86,8 @@
 		"job_script" : "experiment/job/base_job.sh",
 		"variables" : {
 			"permutations" : {
-				"model.randomSeed.cell" : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-				"model.genomeNum" : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+				"model.randomSeed.cell" : [1],
+				"model.genomeNum" : [1]
 			}
 		},
 		"independent_variable" : "model.genomeNum",
