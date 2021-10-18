@@ -169,7 +169,7 @@ def _plot_metrics(config, overrides, args):
 
     genomeNum = config["model"]["genomeNum"];
 
-    # MAKE LEGEND MODULAR
+    legend = ["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"]
 
     averageNumGenome = [];
 
@@ -178,11 +178,11 @@ def _plot_metrics(config, overrides, args):
 
     averageNumGenome.append(-1)
 
-    metrics.iloc[:, averageNumGenome].plot(x="indep_var")
-    plt.title("Average number of living cells by genome")
+    metrics.iloc[:, averageNumGenome].plot(x="indep_var", figsize=(10, 6), kind="bar", stacked = True)
+    plt.title("Average living cells by number of genomes")
     plt.ylabel("Average living cells")
     plt.xlabel(config["experiment"]["independent_variable"])
-    plt.legend(["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"], loc = "upper left")
+    plt.legend(legend, loc = "upper left")
     plt.savefig(os.path.join(basedir, "genome_number_of_cells.png"), dpi=300)
     plt.close()
 
@@ -193,11 +193,11 @@ def _plot_metrics(config, overrides, args):
 
     averageEnergyGenome.append(-1)
 
-    metrics.iloc[:, averageEnergyGenome].plot(x="indep_var")
-    plt.title("Average number of cell energy by genome")
+    metrics.iloc[:, averageEnergyGenome].plot(x="indep_var",figsize=(10, 6), kind="bar")
+    plt.title("Average cell energy by number of genomes")
     plt.ylabel("Average cell energy")
     plt.xlabel(config["experiment"]["independent_variable"])
-    plt.legend(["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"], loc = "upper left")
+    plt.legend(legend, loc = "upper left")
     plt.savefig(os.path.join(basedir, "genome_average_energy.png"), dpi=300)
     plt.close()
 
@@ -208,11 +208,11 @@ def _plot_metrics(config, overrides, args):
 
     averageChemGenome.append(-1)
 
-    metrics.iloc[:, averageChemGenome].plot(x="indep_var")
-    plt.title("Average number of cell chemicals by genome")
+    metrics.iloc[:, averageChemGenome].plot(x="indep_var",figsize=(10, 6), kind="bar")
+    plt.title("Average cell chemicals by number of genomes")
     plt.ylabel("Average cell chemicals")
     plt.xlabel(config["experiment"]["independent_variable"])
-    plt.legend(["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"], loc = "upper left")
+    plt.legend(legend, loc = "upper left")
     plt.savefig(os.path.join(basedir, "genome_average_chemicals.png"), dpi=300)
     plt.close()
 
@@ -223,11 +223,11 @@ def _plot_metrics(config, overrides, args):
 
     averageToxinGenome.append(-1)
 
-    metrics.iloc[:, averageToxinGenome].plot(x="indep_var")
-    plt.title("Average number of cell toxins by genome")
+    metrics.iloc[:, averageToxinGenome].plot(x="indep_var",figsize=(10, 6), kind="bar", stacked = True)
+    plt.title("Average genome cell chemicals by number of genomes")
     plt.ylabel("Average cell toxins")
     plt.xlabel(config["experiment"]["independent_variable"])
-    plt.legend(["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"], loc = "upper left")
+    plt.legend(legend, loc = "upper left")
     plt.savefig(os.path.join(basedir, "genome_average_toxins.png"), dpi=300)
     plt.close()
 
@@ -313,11 +313,9 @@ def _plot_individual(path, overrides, config, genomeNum):
     for x in range(genomeNum):
         legend.append("genome" + str(x+1))
 
-    stats.iloc[:, cellNum].plot(x="iteration")
+    stats.iloc[:, cellNum].plot(x="iteration", xlabel="Iterations", figsize=(10, 6), ylabel = "Number of cells", kind="bar", stacked = True)
     plt.title("Number of cells by genome")
-    plt.ylabel("Number of cells")
-    plt.xlabel("iterations")
-    plt.legend(legend, loc = "upper left")
+    plt.legend(legend, bbox_to_anchor=(1, 0.75))
     plt.savefig(os.path.join(directory, "genome_cell_num.png"), dpi=300)
     plt.close()
 
@@ -331,11 +329,9 @@ def _plot_individual(path, overrides, config, genomeNum):
     for x in range(genomeNum):
         cellEnergy.append(numberOfVariablesBeforeGenomes+maxGenomeNum+x)
 
-    stats.iloc[:, cellEnergy].plot(x="iteration")
+    stats.iloc[:, cellEnergy].plot(x="iteration", xlabel="Iterations", figsize=(10, 6), ylabel = "Average cell energy", kind="bar", stacked = True)
     plt.title("Average cell energy by genome")
-    plt.ylabel("Average cell energy")
-    plt.xlabel("iterations")
-    plt.legend(legend, loc = "upper left")
+    plt.legend(legend, bbox_to_anchor=(1, 0.75))
     plt.savefig(os.path.join(directory, "genome_average_energy.png"), dpi=300)
     plt.close()
 
@@ -344,11 +340,9 @@ def _plot_individual(path, overrides, config, genomeNum):
     for x in range(genomeNum):
         cellChem.append(numberOfVariablesBeforeGenomes+maxGenomeNum*2+x)
 
-    stats.iloc[:, cellChem].plot(x="iteration")
+    stats.iloc[:, cellChem].plot(x="iteration", xlabel="Iterations", figsize=(10, 6), ylabel = "Average cell chemicals", kind="bar", stacked = True)
     plt.title("Average cell chemicals by genome")
-    plt.ylabel("Average cell chemicals")
-    plt.xlabel("iterations")
-    plt.legend(legend, loc = "upper left")
+    plt.legend(legend, bbox_to_anchor=(1, 0.75))
     plt.savefig(os.path.join(directory, "genome_average_chem.png"), dpi=300)
     plt.close()
 
@@ -357,11 +351,9 @@ def _plot_individual(path, overrides, config, genomeNum):
     for x in range(genomeNum):
         cellToxin.append(numberOfVariablesBeforeGenomes+maxGenomeNum*3+x)
 
-    stats.iloc[:, cellChem].plot(x="iteration")
+    stats.iloc[:, cellChem].plot(x="iteration", xlabel="Iterations", figsize=(10, 6), ylabel = "Average cell toxins", kind="bar", stacked = True)
     plt.title("Average cell toxins by genome")
-    plt.ylabel("Average cell toxins")
-    plt.xlabel("iterations")
-    plt.legend(legend, loc = "upper left")
+    plt.legend(legend, bbox_to_anchor=(1, 0.75))
     plt.savefig(os.path.join(directory, "genome_average_toxin.png"), dpi=300)
     plt.close()
 
