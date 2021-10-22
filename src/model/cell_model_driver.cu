@@ -20,7 +20,7 @@ CellModelDriver::CellModelDriver(std::string paramsPath) {
 void CellModelDriver::writeRuntime(SimulationParameters &params, std::vector<int> runtimeVector) {
 	auto outputStream = std::ofstream(params.output.runtime.file);
 
-	outputStream << "setup_runtime, simulation_runtime, video_runtime, statistics_runtime, model_runtime, finalisation_runtime, total_runtime, cell_runtime, big_cell_runtime, iteractions_runtime, prepare_growth_runtime, growth_interactions_runtime, environment_runtime, model_runtime" << std::endl;
+	outputStream << "setup_runtime,video_runtime,statistics_runtime,finalisation_runtime,cell_runtime,big_cell_runtime,iteractions_runtime,prepare_growth_runtime,growth_interactions_runtime,environment_runtime" << std::endl;
 	std::string outputValues = std::to_string(runtimeVector.at(0));
 
 	for(int i = 1; i < runtimeVector.size(); i++) {
@@ -141,12 +141,11 @@ void CellModelDriver::run() {
 	std::vector<int> runtimeVector;
 
 	runtimeVector.push_back(setupRuntime);
-	runtimeVector.push_back(simulationRuntime);
+	// runtimeVector.push_back(simulationRuntime);
 	runtimeVector.push_back(videoOutputRuntime);
 	runtimeVector.push_back(statisticsOutputRuntime);
-	runtimeVector.push_back(modelRuntime);
 	runtimeVector.push_back(finalisationRuntime);
-	runtimeVector.push_back(totalRuntime);
+	// runtimeVector.push_back(totalRuntime);
 
 	runtimeVector.push_back(totalCellsRuntime);
 	runtimeVector.push_back(totalBigCellsRuntime);
@@ -155,7 +154,7 @@ void CellModelDriver::run() {
 	runtimeVector.push_back(totalGrowthInteractionsRuntime);
 	runtimeVector.push_back(totalEnvironmentRuntime);
 
-	runtimeVector.push_back(modelRuntime);
+	// runtimeVector.push_back(modelRuntime);
 
 	writeRuntime(params, runtimeVector);
 
