@@ -359,8 +359,9 @@ void check_death(GridElement &element, ModelParameters &params) {
 		return;
 	}
 	if (element.cell.energy < params.energySurvivalThreshold
-			|| element.cell.chem < params.chemSurvivalThreshold ) {
-			// || element.cell.dToxin >= params.dToxinDeathThreshold) {
+			|| element.cell.chem < params.chemSurvivalThreshold
+			|| element.cell.dToxin >= params.dToxinDeathThreshold) {
+
 		element.cell.alive = false;
 		// Release 90% of resources to env.:
 		int maxChem = (1 << Environment::nbits_chem) - 1;

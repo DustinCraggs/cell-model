@@ -227,7 +227,7 @@ def _plot_metrics(config, overrides, args):
     averageToxinGenome.append(-1)
 
     metrics.iloc[:, averageToxinGenome].plot(x="indep_var",figsize=(10, 6), kind="bar", stacked = True)
-    plt.title("Average genome cell chemicals by number of genomes")
+    plt.title("Average genome cell toxins by number of genomes")
     plt.ylabel("Average cell toxins")
     plt.xlabel(config["experiment"]["independent_variable"])
     plt.legend(legend, loc = "upper left")
