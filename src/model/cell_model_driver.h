@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <chrono>
+#include <vector>
 
 #include "param/simulation_parameters.h"
 
@@ -10,6 +11,5 @@ public:
 	void run();
 private:
 	SimulationParameters params;
-	void writeRuntime(std::chrono::time_point<std::chrono::steady_clock> t0,
-		SimulationParameters &params);
+	void writeRuntime(SimulationParameters &params, std::vector<int> runtimeVector);
 };

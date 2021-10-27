@@ -81,22 +81,23 @@ def vis(args):
     length = len(overrides)
     seeds = length/genomeNum
 
-    if "individual" in plots and plots["individual"] == True:
-        for o in overrides:
-            print("Plotting individual: {}".format(o))
-            path = _get_config_path(config, o)
-            _plot_individual(path, overrides, config, currentGenomeNum)
-            if count%seeds == 0:
-                currentGenomeNum+=1
-            count+=1
+    if config["output"]["statistics"]["enabled"] == True:
+        # if "individual" in plots and plots["individual"] == True:
+        #     for o in overrides:
+        #         print("Plotting individual: {}".format(o))
+        #         path = _get_config_path(config, o)
+        #         _plot_individual(path, overrides, config, currentGenomeNum)
+        #         if count%seeds == 0:
+        #             currentGenomeNum+=1
+        #         count+=1
+
+        print("Plotting metrics")
+        if "metrics" in plots and plots["metrics"] == True:
+            _plot_metrics(config, overrides, args)
+
     print("Plotting runtime")
     if "runtime" in plots and plots["runtime"] == True:
         _plot_runtime(config, overrides, args)
-
-    print("Plotting metrics")
-    if "metrics" in plots and plots["metrics"] == True:
-        _plot_metrics(config, overrides, args)
-
 
 def combine(args):
     pass
@@ -113,16 +114,11 @@ def _plot_runtime(config, overrides, args):
     totalRuntime = 0
 
     dfs_by_indep_val = defaultdict(list)
+
     for x, p in zip(indep_vals, paths):
         directory = os.path.dirname(p)
         df = pd.read_csv(os.path.join(directory, config["output"]["runtime"]["file"]))
         dfs_by_indep_val[x].append(df)
-        totalRuntime += df["total_time"]
-
-    print(totalRuntime)
-
-    basedir = os.path.dirname(os.path.dirname(paths[0]))
-    totalRuntime.to_csv(os.path.join(basedir, "totalRuntime.csv"))
 
     dfs = []
     for indep_val, df_list in dfs_by_indep_val.items():
@@ -132,18 +128,14 @@ def _plot_runtime(config, overrides, args):
 
     times = pd.concat(dfs, axis=0)
 
-    print(times)
-    print(indep_vals)
-
-    times["total_time"] = times["total_time"] / 1000
-    times.plot(x="indep_var")
     basedir = os.path.dirname(os.path.dirname(paths[0]))
-    plt.title("Simulation run time (1000 iterations)")
-    plt.ylabel("Run time (s)")
-    plt.xlabel(config["experiment"]["independent_variable"])
-    plt.savefig(os.path.join(basedir, "runtime.png"), dpi=300)
-    plt.close()
+    times.to_csv(os.path.join(basedir, "runtimeStats.csv"))
 
+    times.plot(x="indep_var", xlabel=indep_var, figsize=(10, 6), ylabel = "Run time (μs)", kind="bar", stacked = True, title = "Simulation run time")
+    basedir = os.path.dirname(os.path.dirname(paths[0]))
+    plt.legend(bbox_to_anchor=(1, 0.75))
+    plt.savefig(os.path.join(basedir, "runtime.png"), dpi=300, bbox_inches='tight')
+    plt.close()
 
 def _plot_metrics(config, overrides, args):
     print("plotting metrics")
@@ -177,20 +169,23 @@ def _plot_metrics(config, overrides, args):
 
     genomeNum = config["model"]["genomeNum"];
 
-    # MAKE LEGEND MODULAR
+    legend = ["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"]
 
     averageNumGenome = [];
 
     for x in range(genomeNum):
         averageNumGenome.append(numberOfVariablesBeforeGenomes+x)
+        lastValue = x
 
     averageNumGenome.append(-1)
 
-    metrics.iloc[:, averageNumGenome].plot(x="indep_var")
-    plt.title("Average number of living cells by genome")
+    error = np.std(metrics.iloc[:, averageNumGenome[lastValue]], ddof=1) / np.sqrt(np.size(metrics.iloc[:, averageNumGenome[lastValue]]))
+
+    metrics.iloc[:, averageNumGenome].plot(x="indep_var", figsize=(10, 6), kind="bar", yerr = error, stacked = True)
+    plt.title("Average living cells by number of genomes")
     plt.ylabel("Average living cells")
     plt.xlabel(config["experiment"]["independent_variable"])
-    plt.legend(["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"], loc = "upper left")
+    plt.legend(legend, loc = "upper left")
     plt.savefig(os.path.join(basedir, "genome_number_of_cells.png"), dpi=300)
     plt.close()
 
@@ -201,11 +196,11 @@ def _plot_metrics(config, overrides, args):
 
     averageEnergyGenome.append(-1)
 
-    metrics.iloc[:, averageEnergyGenome].plot(x="indep_var")
-    plt.title("Average number of cell energy by genome")
+    metrics.iloc[:, averageEnergyGenome].plot(x="indep_var",figsize=(10, 6), kind="bar", stacked = True)
+    plt.title("Average cell energy by number of genomes")
     plt.ylabel("Average cell energy")
     plt.xlabel(config["experiment"]["independent_variable"])
-    plt.legend(["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"], loc = "upper left")
+    plt.legend(legend, loc = "upper left")
     plt.savefig(os.path.join(basedir, "genome_average_energy.png"), dpi=300)
     plt.close()
 
@@ -216,12 +211,27 @@ def _plot_metrics(config, overrides, args):
 
     averageChemGenome.append(-1)
 
-    metrics.iloc[:, averageChemGenome].plot(x="indep_var")
-    plt.title("Average number of cell chemicals by genome")
+    metrics.iloc[:, averageChemGenome].plot(x="indep_var",figsize=(10, 6), kind="bar", stacked = True)
+    plt.title("Average cell chemicals by number of genomes")
     plt.ylabel("Average cell chemicals")
     plt.xlabel(config["experiment"]["independent_variable"])
-    plt.legend(["genome1", "genome2", "genome3", "genome4", "genome5", "genome6", "genome7", "genome8", "genome9", "genome10"], loc = "upper left")
+    plt.legend(legend, loc = "upper left")
     plt.savefig(os.path.join(basedir, "genome_average_chemicals.png"), dpi=300)
+    plt.close()
+
+    averageToxinGenome = []
+
+    for x in range(genomeNum):
+        averageToxinGenome.append(numberOfVariablesBeforeGenomes+(maxGenomeNum*3)+x)
+
+    averageToxinGenome.append(-1)
+
+    metrics.iloc[:, averageToxinGenome].plot(x="indep_var",figsize=(10, 6), kind="bar", stacked = True)
+    plt.title("Average genome cell toxins by number of genomes")
+    plt.ylabel("Average cell toxins")
+    plt.xlabel(config["experiment"]["independent_variable"])
+    plt.legend(legend, loc = "upper left")
+    plt.savefig(os.path.join(basedir, "genome_average_toxins.png"), dpi=300)
     plt.close()
 
     metrics.iloc[:, [1, -1]].plot(x="indep_var")
@@ -266,6 +276,25 @@ def _plot_metrics(config, overrides, args):
     plt.savefig(os.path.join(basedir, "environment_waste.png"), dpi=300)
     plt.close()
 
+    metrics.iloc[:, 1] = metrics.iloc[:, 1].divide(metrics.iloc[:, -1])
+
+    genomeError = np.std(metrics.iloc[:, 1], ddof=1) / np.sqrt(np.size(metrics.iloc[:, 1]))
+
+    metrics.iloc[:, [1, -1]].plot(x="indep_var", yerr = genomeError)
+    plt.title("Average number of living cells, normalised for genome number")
+    plt.ylabel("Average number of living cells")
+    plt.xlabel(config["experiment"]["independent_variable"])
+    plt.savefig(os.path.join(basedir, "number_of_cells_normalised_large_error.png"), dpi=300)
+    plt.close()
+
+    genomeError = (np.std(metrics.iloc[:, 1], ddof=1) / np.sqrt(np.size(metrics.iloc[:, 1])))/10
+
+    metrics.iloc[:, [1, -1]].plot(x="indep_var", yerr = genomeError)
+    plt.title("Average number of living cells, normalised for genome number")
+    plt.ylabel("Average number of living cells")
+    plt.xlabel(config["experiment"]["independent_variable"])
+    plt.savefig(os.path.join(basedir, "number_of_cells_normalised_small_error.png"), dpi=300)
+    plt.close()
 
 def _get_indep_vals(indep_var, overrides):
     vals = []
@@ -304,13 +333,11 @@ def _plot_individual(path, overrides, config, genomeNum):
         cellNum.append(numberOfVariablesBeforeGenomes+x)
 
     for x in range(genomeNum):
-        legend.append("genome" + str(x))
+        legend.append("genome" + str(x+1))
 
-    stats.iloc[:, cellNum].plot(x="iteration")
+    stats.iloc[:, cellNum].plot(x="iteration", xlabel="Iterations", figsize=(10, 6), ylabel = "Number of cells", kind="bar", stacked = True)
     plt.title("Number of cells by genome")
-    plt.ylabel("Number of cells")
-    plt.xlabel("iterations")
-    plt.legend(legend, loc = "upper left")
+    plt.legend(legend, bbox_to_anchor=(1, 0.75))
     plt.savefig(os.path.join(directory, "genome_cell_num.png"), dpi=300)
     plt.close()
 
@@ -319,11 +346,9 @@ def _plot_individual(path, overrides, config, genomeNum):
     for x in range(genomeNum):
         cellEnergy.append(numberOfVariablesBeforeGenomes+maxGenomeNum+x)
 
-    stats.iloc[:, cellEnergy].plot(x="iteration")
+    stats.iloc[:, cellEnergy].plot(x="iteration", xlabel="Iterations", figsize=(10, 6), ylabel = "Average cell energy", kind="bar", stacked = True)
     plt.title("Average cell energy by genome")
-    plt.ylabel("Average energy")
-    plt.xlabel("iterations")
-    plt.legend(legend, loc = "upper left")
+    plt.legend(legend, bbox_to_anchor=(1, 0.75))
     plt.savefig(os.path.join(directory, "genome_average_energy.png"), dpi=300)
     plt.close()
 
@@ -332,12 +357,21 @@ def _plot_individual(path, overrides, config, genomeNum):
     for x in range(genomeNum):
         cellChem.append(numberOfVariablesBeforeGenomes+maxGenomeNum*2+x)
 
-    stats.iloc[:, cellChem].plot(x="iteration")
+    stats.iloc[:, cellChem].plot(x="iteration", xlabel="Iterations", figsize=(10, 6), ylabel = "Average cell chemicals", kind="bar", stacked = True)
     plt.title("Average cell chemicals by genome")
-    plt.ylabel("Average chemicals")
-    plt.xlabel("iterations")
-    plt.legend(legend, loc = "upper left")
+    plt.legend(legend, bbox_to_anchor=(1, 0.75))
     plt.savefig(os.path.join(directory, "genome_average_chem.png"), dpi=300)
+    plt.close()
+
+    cellToxin = [0]
+
+    for x in range(genomeNum):
+        cellToxin.append(numberOfVariablesBeforeGenomes+maxGenomeNum*3+x)
+
+    stats.iloc[:, cellChem].plot(x="iteration", xlabel="Iterations", figsize=(10, 6), ylabel = "Average cell toxins", kind="bar", stacked = True)
+    plt.title("Average cell toxins by genome")
+    plt.legend(legend, bbox_to_anchor=(1, 0.75))
+    plt.savefig(os.path.join(directory, "genome_average_toxin.png"), dpi=300)
     plt.close()
 
 def _get_config_path(config, override):

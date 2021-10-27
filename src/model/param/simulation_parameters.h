@@ -16,6 +16,7 @@ struct CudaParameters {
 
 struct OutputParameters {
 	struct Video {
+		bool enabled;
 		int interval = 1000;
 		string energyPath;
 		string chemPath;
@@ -25,6 +26,7 @@ struct OutputParameters {
 	} video;
 
 	struct Statistics {
+		bool enabled;
 		int interval;
 		bool console;
 		string file;

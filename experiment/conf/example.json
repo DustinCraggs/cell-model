@@ -33,11 +33,11 @@
 		"digestibleToxinDigestionRate" : 1,
 		"digestibleToxinDigestionCost" : 1,
 
-		"genomeNum" : 5,
-		"startingEnergy" : [100, 200, 300, 400, 500],
-		"startingChem" : [100, 200, 300, 400, 500],
-		"energyUsageRate" : [1, 2, 3, 4, 5],
-		"chemUsageRate" : [1, 2, 3, 4, 5],
+		"genomeNum" : 10,
+		"startingEnergy" : [500, 500, 500, 500, 500, 500, 500, 500, 500, 500],
+		"startingChem" : [500, 500, 500, 500, 500, 500, 500, 500, 500, 500],
+		"energyUsageRate" : [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+		"chemUsageRate" : [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 
 		"movementProbability" : 0.1,
 
@@ -64,6 +64,7 @@
 
 	"output" : {
 		"video" : {
+			"enabled" : true,
 			"interval" : 1,
 			"energy" : "energy.mp4",
 			"chemical" : "chem.mp4",
@@ -71,6 +72,7 @@
 			"genome": "genome.mp4"
 		},
 		"statistics" : {
+			"enabled" : true,
 			"file" : "statistics.csv",
 			"console" : true,
 			"interval" : 50
@@ -85,8 +87,8 @@
 		"job_script" : "experiment/job/base_job.sh",
 		"variables" : {
 			"permutations" : {
-				"model.genomeNum" : [1, 2, 3, 4, 5],
-				"model.randomSeed.cell" : [1005, 1006]
+				"model.randomSeed.grid" : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+				"model.genomeNum" : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 			}
 		},
 		"independent_variable" : "model.genomeNum",

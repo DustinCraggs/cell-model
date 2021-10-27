@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <chrono>
 #include <curand_kernel.h>
 
 #include "cell_model.cuh"
@@ -93,28 +94,51 @@ void CellModel::initialise() {
 }
 
 void CellModel::simulate(int nIterations) {
+
 	for (int i = 0; i < nIterations; i++) {
-		// Cells:
+		// Cells
+		auto start = std::chrono::high_resolution_clock::now();
 		update_cells<<<numBlocks, blockSize>>>(grid, params.model, iterations);
+		auto stop = std::chrono::high_resolution_clock::now();
+		runtimeCells = std::chrono::duration_cast<std::chrono::microseconds>(stop-start).count();
 		checkCudaError(cudaPeekAtLastError());
+
+		start = std::chrono::high_resolution_clock::now();
 		update_big_cells<<<numBlocks, blockSize>>>(grid, params.model, iterations);
+		stop = std::chrono::high_resolution_clock::now();
+		runtimeBigCells = std::chrono::duration_cast<std::chrono::microseconds>(stop-start).count();
 		checkCudaError(cudaPeekAtLastError());
+
+		start = std::chrono::high_resolution_clock::now();
 		update_interactions<<<numBlocks, blockSize>>>(grid, params.model, iterations);
+		stop = std::chrono::high_resolution_clock::now();
+		runtimeInteractions = std::chrono::duration_cast<std::chrono::microseconds>(stop-start).count();
 		checkCudaError(cudaPeekAtLastError());
 
 		// Growth:
+		start = std::chrono::high_resolution_clock::now();
 		prepare_growth<<<numBlocks, blockSize>>>(grid, params.model, iterations);
+		stop = std::chrono::high_resolution_clock::now();
+		runtimePrepareGrowth = std::chrono::duration_cast<std::chrono::microseconds>(stop-start).count();
 		checkCudaError(cudaPeekAtLastError());
+
+		start = std::chrono::high_resolution_clock::now();
 		update_growth_interactions<<<numBlocks, blockSize>>>(grid, params.model, iterations);
+		stop = std::chrono::high_resolution_clock::now();
+		runtimeGrowthInteractions = std::chrono::duration_cast<std::chrono::microseconds>(stop-start).count();
 		checkCudaError(cudaPeekAtLastError());
 
 		// Environment
+		start = std::chrono::high_resolution_clock::now();
 		update_environment<<<numBlocks, blockSize>>>(grid, params.model);
+		stop = std::chrono::high_resolution_clock::now();
+		runtimeEnvironment = std::chrono::duration_cast<std::chrono::microseconds>(stop-start).count();
 		checkCudaError(cudaPeekAtLastError());
 
 		// Simulation:
 		this->iterations++;
 	}
+
 }
 
 __global__
@@ -170,9 +194,11 @@ void initialise_grid(GridElement *grid, ModelParameters params) {
 
 		float randNum = curand_uniform(&grid[idx].randState);
 
+		int maxGenomeNum = 10;
+
 		// Different modes for density (based on genome num or not)
-		// if(randNum < (params.initialCellDensity)*(float(params.genomeNum)/10)) {
-		if(randNum < params.initialCellDensity) {
+		if(randNum < (params.initialCellDensity)*(float(params.genomeNum)/maxGenomeNum)) {
+		// if(randNum < params.initialCellDensity) {
 			initialise_cell(element.cell, idx, params, randNum);
 		}
 
@@ -196,11 +222,13 @@ void initialise_cell(Cell &cell, int idx, ModelParameters params, float randNum)
 	// Keep as float since it needs to be for fraction calculation.
 	float genomeNum = params.genomeNum;
 
+	int maxGenomeNum = 10;
+
 	for(int i = 1; i <= genomeNum; i++) {
 
 		// Different modes for density (based on genome num or not)
-		// if(randNum <= (params.initialCellDensity*((1/genomeNum)*i))/genomeNum) {
-		if(randNum <= params.initialCellDensity*((1/genomeNum)*i)) {
+		if(randNum <= (params.initialCellDensity*((1/genomeNum)*i))*(float(genomeNum/maxGenomeNum))) {
+		// if(randNum <= params.initialCellDensity*((1/genomeNum)*i)) {
 
 			cell.genome = i;
 			break;
@@ -331,8 +359,9 @@ void check_death(GridElement &element, ModelParameters &params) {
 		return;
 	}
 	if (element.cell.energy < params.energySurvivalThreshold
-			|| element.cell.chem < params.chemSurvivalThreshold ) {
-			// || element.cell.dToxin >= params.dToxinDeathThreshold) {
+			|| element.cell.chem < params.chemSurvivalThreshold
+			|| element.cell.dToxin >= params.dToxinDeathThreshold) {
+
 		element.cell.alive = false;
 		// Release 90% of resources to env.:
 		int maxChem = (1 << Environment::nbits_chem) - 1;

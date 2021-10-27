@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include "grid_element.h"
 #include "param/simulation_parameters.h"
 
@@ -15,6 +16,14 @@ public:
 	SimulationParameters getParams();
 	void updateParams(SimulationParameters params);
 	void redistributeChemicals(double newChemDensity, bool invertDistribution);
+
+	int runtimeCells;
+	int runtimeBigCells;
+	int runtimeInteractions;
+	int runtimePrepareGrowth;
+	int runtimeGrowthInteractions;
+	int runtimeEnvironment;
+
 private:
 	void initialise();
 	void iterateRandomMovement();
@@ -24,4 +33,6 @@ private:
 	dim3 blockSize;
 	dim3 numBlocks;
 	int iterations = 0;
+
+
 };

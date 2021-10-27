@@ -52,6 +52,17 @@ public:
 	double genome8TotalCellChem(CellModel model);
 	double genome9TotalCellChem(CellModel model);
 	double genome10TotalCellChem(CellModel model);
+
+	double genome1TotalCellToxin(CellModel model);
+	double genome2TotalCellToxin(CellModel model);
+	double genome3TotalCellToxin(CellModel model);
+	double genome4TotalCellToxin(CellModel model);
+	double genome5TotalCellToxin(CellModel model);
+	double genome6TotalCellToxin(CellModel model);
+	double genome7TotalCellToxin(CellModel model);
+	double genome8TotalCellToxin(CellModel model);
+	double genome9TotalCellToxin(CellModel model);
+	double genome10TotalCellToxin(CellModel model);
 	
 
 private:
